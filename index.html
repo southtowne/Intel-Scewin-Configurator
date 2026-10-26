@@ -1,6 +1,5 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Intel SCEWIN Configurator</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap">
 <style>
   :root {
@@ -281,7 +280,7 @@
     font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600;
     padding: 0.15rem 0.2rem; border-radius: 3px; border: 1px solid var(--border);
     background: var(--surface); color: var(--fg); cursor: pointer;
-    max-width: 80px; width: 100%;
+    max-width: 140px; width: 100%;
   }
   .row-action:focus { outline: 1px solid var(--accent); }
   td.toggle-cell { text-align: center; vertical-align: middle; }
@@ -441,6 +440,7 @@
       <tr data-action="disable"><td>Run-time C7 Allowed</td><td><span class="val val-disable">Disable</span></td><td>Allows iGPU to request package C7 at runtime</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>MonitorMWait</td><td><span class="val val-disable">Disable</span></td><td>MONITOR/MWAIT instruction pair for C-state entry  -  can prevent boot on some boards</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>MWAIT Redirection</td><td><span class="val val-disable">Disable</span></td><td>Redirects I/O-based C-state requests to MWAIT</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>OS IDLE Mode</td><td><span class="val val-disable">Disable</span></td><td>OS-driven idle power management mode - firmware defers idle transitions to OS scheduler</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>S0ix Auto Demotion</td><td><span class="val val-disable">Disable</span></td><td><a href="https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/modern-standby" target="_blank" rel="noopener">Modern Standby</a> sub-state auto demotion</td><td class="col-toggle toggle-cell"></td></tr>
     </tbody>
   </table>
@@ -524,6 +524,8 @@
   <table class="ref-only">
     <thead><tr><th>Setting</th><th>Value</th><th>Notes</th><th class="col-toggle"></th></tr></thead>
     <tbody>
+      <tr data-action="enable"><td>Hardware Prefetcher</td><td><span class="val val-enable">Enable</span></td><td>L2 streamer prefetch (MSR 0x1A4 bit 0) - keeps speculative prefetch active for general workloads</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>Adjacent Cache Line Prefetch</td><td><span class="val val-enable">Enable</span></td><td>Fetches neighboring 64B cache line on miss - beneficial for sequential access patterns</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>Hyper-Threading</td><td><span class="val val-disable">Disable</span></td><td>SMT  -  two logical cores per physical; disable if 6+ cores unless consistently CPU-bound at 99%</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="set" data-target="RUN Loop"><td>AP Threads Idle Manner</td><td><span class="val val-set">RUN Loop</span></td><td>Application Processors spin in RUN loop instead of HLT/MWAIT  -  avoids C-state exit latency on wake</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="set" data-target="Turbo Performance"><td>Boot Performance Mode</td><td><span class="val val-set">Turbo Performance</span></td><td>CPU starts POST at max turbo ratio instead of LFM</td><td class="col-toggle toggle-cell"></td></tr>
@@ -577,6 +579,7 @@
       <tr data-action="valuezero"><td>EPG DIMM Idd3N</td><td><span class="val val-set">0</span></td><td>JEDEC IDD3N  -  active standby current used in power-down scheduling; 0 disables EPG calc</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="valuezero"><td>EPG DIMM Idd3P</td><td><span class="val val-set">0</span></td><td>JEDEC IDD3P  -  precharge power-down current; 0 disables EPG calc</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>Command Tristate</td><td><span class="val val-disable">Disable</span></td><td>Floats CMD/ADDR bus when rank idle  -  saves power but adds reactivation delay</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>Per Bank Refresh</td><td><span class="val val-enable">Enable</span></td><td>Refreshes individual banks instead of all-bank REF - lower peak latency per refresh cycle</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>SelfRefresh Enable</td><td><span class="val val-disable">Disable</span></td><td>Allows DRAM self-refresh (CKE low)  -  can cause boot issues on some boards</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>LPMode</td><td><span class="val val-disable">Disable</span></td><td>DRAM low-power mode  -  reduces I/O drive strength and frequency at idle</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>ECC Support</td><td><span class="val val-disable">Disable</span></td><td>SECDED error correction  -  uses extra bits per cacheline; test stability after disabling</td><td class="col-toggle toggle-cell"></td></tr>
@@ -699,6 +702,7 @@
       <tr data-action="disable"><td>Hardware Autonomous Speed</td><td><span class="val val-disable">Disable</span></td><td>Allows PCIe hardware to autonomously change link speed - disable for fixed link rate</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>PCH ASPM</td><td><span class="val val-disable">Disable</span></td><td>PCH-side Active State Power Management for PCIe slots</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>PEG ASPM</td><td><span class="val val-disable">Disable</span></td><td>PEG (CPU PCIe) Active State Power Management</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PCIe Native Power Management</td><td><span class="val val-disable">Disable</span></td><td>OS-native PCIe power management via ACPI _OSC - lets OS control link power states</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>Platform Power Management</td><td><span class="val val-disable">Disable</span></td><td>Platform-level ASPM control - master toggle for PCH/PEG ASPM</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>DMA Control Guarantee</td><td><span class="val val-disable">Disable</span></td><td>DMA security control - restricts unauthorized memory access; disable may help older PCIe device compatibility</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable" data-keywords="FER"><td>Fatal Error Reporting (FER)</td><td><span class="val val-disable">Disable</span></td><td>All entries - PCIe fatal error reporting to root complex; generates system error on fatal link/protocol failures</td><td class="col-toggle toggle-cell"></td></tr>
@@ -732,6 +736,7 @@
       <tr data-action="disable"><td>USB Overcurrent Lock</td><td><span class="val val-disable">Disable</span></td><td>Locks overcurrent configuration  -  ⚠️ same risk as above</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>USB Single Port Control</td><td><span class="val val-disable">Disable</span></td><td>Per-port enable/disable management</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>USB Mass Storage Driver Support</td><td><span class="val val-disable">Disable</span></td><td>Firmware USB mass storage driver  -  only needed for booting from USB drives</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-keywords="USB S5 Physical Connector"><td>USB S5 Physical Connector</td><td><span class="val val-disable">Disable</span></td><td>All entries - USB physical connector power in S5 state; disable cuts USB port power when system is off</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>USB S5 Wakeup Support</td><td><span class="val val-disable">Disable</span></td><td>Allows USB device to wake system from soft-off (S5) state</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>USB Provisioning of AMT</td><td><span class="val val-disable">Disable</span></td><td>Intel AMT USB provisioning  -  remote management feature via <a href="https://www.intel.com/content/www/us/en/architecture-and-technology/intel-active-management-technology.html" target="_blank" rel="noopener">Intel AMT</a></td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>USB3 Type-C UFP2DFP Kernel/Platform Debug Support</td><td><span class="val val-disable">Disable</span></td><td>Type-C debug mode for kernel/platform trace over USB  -  development only</td><td class="col-toggle toggle-cell"></td></tr>
@@ -789,6 +794,7 @@
       <tr data-action="disable"><td>Wi-Fi Core</td><td><span class="val val-disable">Disable</span></td><td>Wi-Fi radio core power</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>CNVI MODE</td><td><span class="val val-disable">Disable</span></td><td>Connectivity Integration  -  PCH-side Wi-Fi/BT MAC shared with CNVi module</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>Onboard CNVi Module Control</td><td><span class="val val-disable">Disable</span></td><td>CNVi companion RF module  -  disable if not using onboard Wi-Fi/BT</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>BT Core</td><td><span class="val val-disable">Disable</span></td><td>Bluetooth radio core power - disable if not using BT peripherals</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>Bluetooth Controller</td><td><span class="val val-disable">Disable</span></td><td>Bluetooth radio  -  disable if not using BT peripherals</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>Discrete Bluetooth Interface</td><td><span class="val val-disable">Disable</span></td><td>Standalone BT controller (non-CNVi)</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>Connectivity mode (Wi-Fi &amp; Bluetooth)</td><td><span class="val val-disable">Disable</span></td><td>Combined Wi-Fi + BT radio toggle</td><td class="col-toggle toggle-cell"></td></tr>
@@ -1048,10 +1054,27 @@ function buildSectionToggles() {
       const on = btn.classList.contains('active');
       settingsDB.filter(s => s.section === sec).forEach(s => {
         if (on && s.row.hasAttribute('data-no-preset')) return;
-        s.enabled = on;
-        s.action = s.defaultAction;
         const sel = s.row.querySelector('.row-action');
-        if (sel) sel.value = on ? s.defaultAction : '';
+        if (!sel) return;
+        if (on) {
+          let picked = '';
+          for (const o of sel.options) {
+            if (o.textContent.includes('★')) { picked = o.value; break; }
+          }
+          if (!picked) picked = s.defaultAction;
+          sel.value = picked;
+          if (sel.value !== picked) sel.value = s.defaultAction;
+          s.enabled = sel.value !== '';
+          if (s.enabled) {
+            const isNvram = sel.options.length > 0 && sel.options[1] && !/^(Disable|Enable|Set|Test)$/.test(sel.options[1].value);
+            if (isNvram) { s.action = 'set'; s.target = sel.value; }
+            else { s.action = sel.value || s.defaultAction; }
+          }
+        } else {
+          sel.value = '';
+          s.enabled = false;
+          s.action = s.defaultAction;
+        }
       });
       updateSelectedCount();
     });
@@ -1069,9 +1092,21 @@ updateSelectedCount();
 document.getElementById('btnSelectAll').addEventListener('click', () => {
   settingsDB.forEach(s => {
     if (s.row.hasAttribute('data-no-preset')) return;
-    s.enabled = true; s.action = s.defaultAction;
     const sel = s.row.querySelector('.row-action');
-    if (sel) sel.value = s.defaultAction;
+    if (!sel) return;
+    let picked = '';
+    for (const o of sel.options) {
+      if (o.textContent.includes('★')) { picked = o.value; break; }
+    }
+    if (!picked) picked = s.defaultAction;
+    sel.value = picked;
+    if (sel.value !== picked) sel.value = s.defaultAction;
+    s.enabled = sel.value !== '';
+    if (s.enabled) {
+      const isNvram = sel.options.length > 0 && sel.options[1] && !/^(Disable|Enable|Set|Test)$/.test(sel.options[1].value);
+      if (isNvram) { s.action = 'set'; s.target = sel.value; }
+      else { s.action = sel.value || s.defaultAction; }
+    }
   });
   document.querySelectorAll('.section-toggle').forEach(b => b.classList.add('active'));
   updateSelectedCount();
@@ -1105,8 +1140,9 @@ function parseNVRAM(text) {
       current.optStart = i;
       current.optEnd = i;
       const parseOpt = l => {
-        const sel = /\*/.test(l);
-        const m = l.match(/\[([^\]]+)\]\s*(.+?)(\s*\/\/.*)?$/);
+        const sel = /\*\[/.test(l);
+        const cleaned = l.replace(/\s*\/\/.*$/, '');
+        const m = cleaned.match(/\[([^\]]+)\]\s*(.+)$/);
         if (m) current.opts.push({ hex: m[1], label: m[2].trim(), selected: sel });
       };
       parseOpt(line);
@@ -1326,12 +1362,34 @@ function populateDropdowns(parsed) {
     };
     sel._handler = handler;
     sel.addEventListener('change', handler);
+
+    let recVal = '';
+    for (const o of sel.options) {
+      if (o.textContent.includes('★')) { recVal = o.value; break; }
+    }
+    if (recVal) {
+      sel.value = recVal;
+      setting.enabled = true;
+      setting.action = 'set';
+      setting.target = recVal;
+    }
+  }
+
+  settingsDB.forEach(s => {
+    if (populated.has(s)) return;
+    const sel = s.row.querySelector('.row-action');
+    if (!sel) return;
+    sel.innerHTML = '';
+    const na = document.createElement('option');
+    na.value = ''; na.textContent = 'N/A';
+    sel.appendChild(na);
+    sel.disabled = true;
+    s.enabled = false;
   });
+  updateSelectedCount();
 }
 
 // ---- APPLY ----
-let downloadsAPI = null;
-(async () => { try { downloadsAPI = await claude.use('downloads'); } catch(e) {} })();
 
 let pendingResult = null;
 function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
@@ -1388,13 +1446,8 @@ document.getElementById('btnConfirmApply').addEventListener('click', async () =>
   document.getElementById('confirmOverlay').classList.remove('visible');
   nvramLines = { lines: result.lines, blocks: parseNVRAM(nvramOriginal).blocks };
   const blob = new Blob([result.lines.join('\r\n')], { type: 'text/plain' });
-  if (downloadsAPI) {
-    try { await downloadsAPI.save({ filename: 'nvram.txt', data: blob }); }
-    catch (e) { document.getElementById('applyResult').textContent = 'Download declined or unavailable'; return; }
-  } else {
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-    a.download = 'nvram.txt'; a.click(); URL.revokeObjectURL(a.href);
-  }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'nvram.txt'; a.click(); URL.revokeObjectURL(a.href);
   document.getElementById('applyResult').textContent =
     `Applied ${result.changed} changes across ${result.changes.length} settings`;
 });
