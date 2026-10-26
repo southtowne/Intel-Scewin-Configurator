@@ -1,3 +1,4 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Intel SCEWIN Configurator</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap">
@@ -275,11 +276,14 @@
     color: var(--fg-muted); font-weight: 400;
   }
 
-  /* ---- Toggle checkboxes in rows ---- */
-  .row-toggle {
-    width: 16px; height: 16px; accent-color: var(--accent);
-    cursor: pointer; margin: 0;
+  /* ---- Row action selects ---- */
+  .row-action {
+    font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600;
+    padding: 0.15rem 0.2rem; border-radius: 3px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--fg); cursor: pointer;
+    max-width: 80px; width: 100%;
   }
+  .row-action:focus { outline: 1px solid var(--accent); }
   td.toggle-cell { text-align: center; vertical-align: middle; }
   .col-toggle { display: none; }
   .configurator-active .col-toggle { display: table-cell; }
@@ -521,8 +525,6 @@
     <thead><tr><th>Setting</th><th>Value</th><th>Notes</th><th class="col-toggle"></th></tr></thead>
     <tbody>
       <tr data-action="disable"><td>Hyper-Threading</td><td><span class="val val-disable">Disable</span></td><td>SMT  -  two logical cores per physical; disable if 6+ cores unless consistently CPU-bound at 99%</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Hardware Prefetcher</td><td><span class="val val-disable">Disable</span></td><td>L2 streamer prefetch (MSR 0x1A4 bit 0)  -  can evict useful cache lines with speculative fetches</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Adjacent Cache Line Prefetch</td><td><span class="val val-disable">Disable</span></td><td>Fetches neighboring 64B cache line on every miss  -  doubles bandwidth per access</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="set" data-target="RUN Loop"><td>AP Threads Idle Manner</td><td><span class="val val-set">RUN Loop</span></td><td>Application Processors spin in RUN loop instead of HLT/MWAIT  -  avoids C-state exit latency on wake</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="set" data-target="Turbo Performance"><td>Boot Performance Mode</td><td><span class="val val-set">Turbo Performance</span></td><td>CPU starts POST at max turbo ratio instead of LFM</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="set" data-target="Fixed Priority"><td>Interrupt Redirection Mode Selection</td><td><span class="val val-set">Fixed Priority</span></td><td>IOAPIC delivery mode  -  minimal impact with MSI; Fixed avoids TPR arbitration; <a href="https://pdos.csail.mit.edu/6.828/2016/readings/ia32/ioapic.pdf" target="_blank" rel="noopener">82093AA §2.4</a></td><td class="col-toggle toggle-cell"></td></tr>
@@ -576,7 +578,6 @@
       <tr data-action="valuezero"><td>EPG DIMM Idd3P</td><td><span class="val val-set">0</span></td><td>JEDEC IDD3P  -  precharge power-down current; 0 disables EPG calc</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>Command Tristate</td><td><span class="val val-disable">Disable</span></td><td>Floats CMD/ADDR bus when rank idle  -  saves power but adds reactivation delay</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>SelfRefresh Enable</td><td><span class="val val-disable">Disable</span></td><td>Allows DRAM self-refresh (CKE low)  -  can cause boot issues on some boards</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Per Bank Refresh</td><td><span class="val val-disable">Disable</span></td><td>Refreshes individual banks instead of all-bank REF  -  lower peak latency but more frequent stalls</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>LPMode</td><td><span class="val val-disable">Disable</span></td><td>DRAM low-power mode  -  reduces I/O drive strength and frequency at idle</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>ECC Support</td><td><span class="val val-disable">Disable</span></td><td>SECDED error correction  -  uses extra bits per cacheline; test stability after disabling</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>In-Band ECC Support</td><td><span class="val val-disable">Disable</span></td><td>DDR5 on-die ECC  -  borrows memory bandwidth for inline error correction</td><td class="col-toggle toggle-cell"></td></tr>
@@ -991,26 +992,44 @@ function buildSettingsDB() {
     const action = tr.dataset.action;
     const target = tr.dataset.target || '';
     const keywords = tr.dataset.keywords || '';
-    db.push({ name, action, target, section, row: tr, enabled: false, keywords });
+    db.push({ name, action, defaultAction: action, target, section, row: tr, enabled: false, keywords });
   });
   return db;
 }
 const settingsDB = buildSettingsDB();
 
 function initToggles() {
-  document.querySelectorAll('section[data-section] tbody tr[data-action]').forEach(tr => {
-    const cell = tr.querySelector('.toggle-cell');
+  const canFlip = new Set(['disable', 'enable', 'valuezero']);
+  settingsDB.forEach(s => {
+    const cell = s.row.querySelector('.toggle-cell');
     if (!cell) return;
-    const cb = document.createElement('input');
-    cb.type = 'checkbox';
-    cb.checked = false;
-    cb.className = 'row-toggle';
-    cb.addEventListener('change', () => {
-      const entry = settingsDB.find(s => s.row === tr);
-      if (entry) entry.enabled = cb.checked;
+    const sel = document.createElement('select');
+    sel.className = 'row-action';
+    const skip = document.createElement('option');
+    skip.value = ''; skip.textContent = '-';
+    sel.appendChild(skip);
+    if (canFlip.has(s.defaultAction)) {
+      const optD = document.createElement('option');
+      optD.value = 'disable'; optD.textContent = 'Disable';
+      const optE = document.createElement('option');
+      optE.value = 'enable'; optE.textContent = 'Enable';
+      sel.appendChild(optD);
+      sel.appendChild(optE);
+    } else {
+      const opt = document.createElement('option');
+      opt.value = s.defaultAction;
+      opt.textContent = s.defaultAction === 'set' ? 'Set' : s.defaultAction === 'test' ? 'Test' : s.defaultAction;
+      sel.appendChild(opt);
+    }
+    sel.value = '';
+    const handler = () => {
+      s.enabled = sel.value !== '';
+      s.action = sel.value || s.defaultAction;
       updateSelectedCount();
-    });
-    cell.appendChild(cb);
+    };
+    sel._handler = handler;
+    sel.addEventListener('change', handler);
+    cell.appendChild(sel);
   });
 }
 initToggles();
@@ -1030,8 +1049,9 @@ function buildSectionToggles() {
       settingsDB.filter(s => s.section === sec).forEach(s => {
         if (on && s.row.hasAttribute('data-no-preset')) return;
         s.enabled = on;
-        const cb = s.row.querySelector('.row-toggle');
-        if (cb) cb.checked = on;
+        s.action = s.defaultAction;
+        const sel = s.row.querySelector('.row-action');
+        if (sel) sel.value = on ? s.defaultAction : '';
       });
       updateSelectedCount();
     });
@@ -1047,12 +1067,21 @@ function updateSelectedCount() {
 updateSelectedCount();
 
 document.getElementById('btnSelectAll').addEventListener('click', () => {
-  settingsDB.forEach(s => { if (s.row.hasAttribute('data-no-preset')) return; s.enabled = true; const cb = s.row.querySelector('.row-toggle'); if (cb) cb.checked = true; });
+  settingsDB.forEach(s => {
+    if (s.row.hasAttribute('data-no-preset')) return;
+    s.enabled = true; s.action = s.defaultAction;
+    const sel = s.row.querySelector('.row-action');
+    if (sel) sel.value = s.defaultAction;
+  });
   document.querySelectorAll('.section-toggle').forEach(b => b.classList.add('active'));
   updateSelectedCount();
 });
 document.getElementById('btnDeselectAll').addEventListener('click', () => {
-  settingsDB.forEach(s => { s.enabled = false; const cb = s.row.querySelector('.row-toggle'); if (cb) cb.checked = false; });
+  settingsDB.forEach(s => {
+    s.enabled = false; s.action = s.defaultAction;
+    const sel = s.row.querySelector('.row-action');
+    if (sel) sel.value = '';
+  });
   document.querySelectorAll('.section-toggle').forEach(b => b.classList.remove('active'));
   updateSelectedCount();
 });
@@ -1067,7 +1096,7 @@ function parseNVRAM(text) {
     if (/^\/\/\s*Setup Question/.test(line)) { current = null; continue; }
     const sqMatch = line.match(/^Setup Question\s*=\s*(.+)$/);
     if (sqMatch) {
-      current = { name: sqMatch[1].trim(), lineIdx: i, type: null, optStart: -1, optEnd: -1, valIdx: -1 };
+      current = { name: sqMatch[1].trim(), lineIdx: i, type: null, optStart: -1, optEnd: -1, valIdx: -1, opts: [] };
       blocks.push(current);
       continue;
     }
@@ -1075,8 +1104,14 @@ function parseNVRAM(text) {
       current.type = 'options';
       current.optStart = i;
       current.optEnd = i;
+      const parseOpt = l => {
+        const sel = /\*/.test(l);
+        const m = l.match(/\[([^\]]+)\]\s*(.+?)(\s*\/\/.*)?$/);
+        if (m) current.opts.push({ hex: m[1], label: m[2].trim(), selected: sel });
+      };
+      parseOpt(line);
       let j = i + 1;
-      while (j < lines.length && /^\s+[\*\[]/.test(lines[j])) { current.optEnd = j; j++; }
+      while (j < lines.length && /^\s+[\*\[]/.test(lines[j])) { current.optEnd = j; parseOpt(lines[j]); j++; }
     }
     if (current && /^Value\s*=/.test(line)) {
       if (!current.type) { current.type = 'value'; current.valIdx = i; }
@@ -1226,8 +1261,72 @@ function handleFile(file) {
     document.body.classList.add('configurator-active');
     document.querySelectorAll('table').forEach(t => t.classList.remove('ref-only'));
     document.getElementById('applyResult').textContent = '';
+    populateDropdowns(parsed);
   };
   reader.readAsText(file);
+}
+
+function populateDropdowns(parsed) {
+  const nameMap = new Map();
+  const kwEntries = [];
+  parsed.blocks.forEach(b => {
+    const key = b.name.toLowerCase().trim();
+    if (!nameMap.has(key)) nameMap.set(key, b);
+  });
+  settingsDB.forEach(s => { if (s.keywords) kwEntries.push(s); });
+
+  const populated = new Set();
+  for (const block of parsed.blocks) {
+    const key = block.name.toLowerCase().trim();
+    let setting = null;
+    const exact = settingsDB.find(s => s.name.toLowerCase().trim() === key && !populated.has(s));
+    if (exact) { setting = exact; }
+    else {
+      for (const ks of kwEntries) {
+        if (!populated.has(ks) && kwMatch(ks.keywords, block.name.trim())) { setting = ks; break; }
+      }
+    }
+    if (!setting || populated.has(setting)) continue;
+    if (block.type !== 'options' || block.opts.length === 0) continue;
+    populated.add(setting);
+
+    const sel = setting.row.querySelector('.row-action');
+    if (!sel) continue;
+    sel.innerHTML = '';
+    const skip = document.createElement('option');
+    skip.value = ''; skip.textContent = '-';
+    sel.appendChild(skip);
+
+    const recAction = setting.defaultAction;
+    const recTarget = setting.target;
+    block.opts.forEach(o => {
+      const opt = document.createElement('option');
+      opt.value = o.label;
+      let text = o.label;
+      const isRec = (recAction === 'disable' && /^disable/i.test(o.label)) ||
+                    (recAction === 'enable' && /^enable/i.test(o.label)) ||
+                    ((recAction === 'set' || recAction === 'special') && recTarget && o.label.indexOf(recTarget) !== -1);
+      if (isRec) text += ' ★';
+      if (o.selected) text += ' (current)';
+      opt.textContent = text;
+      sel.appendChild(opt);
+    });
+
+    if (sel._handler) sel.removeEventListener('change', sel._handler);
+    const handler = () => {
+      if (sel.value === '') {
+        setting.enabled = false;
+        setting.action = setting.defaultAction;
+      } else {
+        setting.enabled = true;
+        setting.action = 'set';
+        setting.target = sel.value;
+      }
+      updateSelectedCount();
+    };
+    sel._handler = handler;
+    sel.addEventListener('change', handler);
+  });
 }
 
 // ---- APPLY ----
@@ -1352,3 +1451,4 @@ filterBtns.forEach(btn => {
 search.addEventListener('input', applyFilters);
 applyFilters();
 </script>
+</body></html>
