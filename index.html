@@ -303,6 +303,38 @@
     td:first-child { word-break: break-word; }
     .drop-zone { padding: 1.25rem 0.75rem; }
   }
+
+  /* ---- Confirm modal ---- */
+  .confirm-overlay {
+    display: none; position: fixed; inset: 0; z-index: 100;
+    background: rgba(0,0,0,0.7); align-items: center; justify-content: center;
+  }
+  .confirm-overlay.visible { display: flex; }
+  .confirm-modal {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; max-width: 900px; width: 95vw; max-height: 80vh;
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .confirm-header {
+    padding: 1rem 1.25rem; border-bottom: 1px solid var(--border);
+    font-family: var(--font-mono); font-size: 0.9rem; font-weight: 600;
+  }
+  .confirm-body { overflow-y: auto; padding: 0; flex: 1; }
+  .confirm-body table { width: 100%; border-collapse: collapse; font-size: 0.78rem; table-layout: fixed; }
+  .confirm-body td, .confirm-body th { word-wrap: break-word; overflow-wrap: break-word; }
+  .confirm-body th {
+    position: sticky; top: 0; background: var(--surface);
+    padding: 0.5rem 0.75rem; text-align: left; font-weight: 600;
+    border-bottom: 1px solid var(--border); font-size: 0.72rem;
+    text-transform: uppercase; letter-spacing: 0.03em; color: var(--fg-muted);
+  }
+  .confirm-body td { padding: 0.4rem 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .confirm-body tr:hover { background: var(--accent-bg); }
+  .match-kw { color: var(--accent); font-size: 0.68rem; display: block; }
+  .confirm-footer {
+    padding: 0.75rem 1.25rem; border-top: 1px solid var(--border);
+    display: flex; gap: 0.5rem; justify-content: flex-end;
+  }
 </style>
 
 <header>
@@ -383,30 +415,30 @@
   <table class="ref-only">
     <thead><tr><th>Setting</th><th>Value</th><th>Notes</th><th class="col-toggle"></th></tr></thead>
     <tbody>
-      <tr data-action="disable"><td>Intel C-State</td><td><span class="val val-disable">Disable</span></td><td>Master C-state toggle</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>C-States Control</td><td><span class="val val-disable">Disable</span></td><td>Alternative master toggle on some boards</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>CPU C States Support</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Package C States Support</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>C1E Support</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>CPU C3 Report</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>CPU C6 Report</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>CPU C7 Report</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>CPU C7</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>CPU C8 Report</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>CPU C9 Report</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>CPU C10 Report</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>C6DRAM</td><td><span class="val val-disable">Disable</span></td><td>Moves DRAM contents to PRM in C6</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Enhanced C-states</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>C-state Pre-Wake</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>C-State Auto Demotion</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>C-State Un-demotion</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Package C-State Demotion</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Package C-State Un-demotion</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="set" data-target="C0/C1"><td>Package C State Limit</td><td><span class="val val-set">C0/C1</span></td><td>Shallowest allowed package state</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Run-time C7 Allowed</td><td><span class="val val-disable">Disable</span></td><td>iGPU related</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>MonitorMWait</td><td><span class="val val-disable">Disable</span></td><td>Related to C-states; can prevent boot on some boards</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>MWAIT Redirection</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>S0ix Auto Demotion</td><td><span class="val val-disable">Disable</span></td><td>Modern standby auto demotion</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Intel C-State</td><td><span class="val val-disable">Disable</span></td><td>Master toggle  -  deeper C-states add exit latency; <a href="https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html" target="_blank" rel="noopener">Intel SDM Vol 3 §15</a></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>C-States Control</td><td><span class="val val-disable">Disable</span></td><td>Alternate master toggle (board-specific naming)</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CPU C States Support</td><td><span class="val val-disable">Disable</span></td><td>Per-core idle states</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Package C States Support</td><td><span class="val val-disable">Disable</span></td><td>Whole-package idle states (PC2–PC10)</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>C1E Support</td><td><span class="val val-disable">Disable</span></td><td>Enhanced C1  -  drops voltage on HLT; adds ~10 µs exit latency</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CPU C3 Report</td><td><span class="val val-disable">Disable</span></td><td>Reports C3 (sleep) availability to OS via ACPI</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CPU C6 Report</td><td><span class="val val-disable">Disable</span></td><td>Reports C6 (deep power-down) to OS  -  flushes L2 cache</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CPU C7 Report</td><td><span class="val val-disable">Disable</span></td><td>Reports C7 to OS  -  flushes LLC</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CPU C7</td><td><span class="val val-disable">Disable</span></td><td>Alternate C7 entry</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CPU C8 Report</td><td><span class="val val-disable">Disable</span></td><td>Reports C8 to OS  -  powers down LLC</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CPU C9 Report</td><td><span class="val val-disable">Disable</span></td><td>Reports C9 to OS  -  Vcc reduced to retention</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CPU C10 Report</td><td><span class="val val-disable">Disable</span></td><td>Reports C10 to OS  -  deepest state, Vcc off</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>C6DRAM</td><td><span class="val val-disable">Disable</span></td><td>Saves core state to DRAM in C6 instead of dedicated SRAM</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Enhanced C-states</td><td><span class="val val-disable">Disable</span></td><td>Firmware-managed deeper idle transitions</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>C-state Pre-Wake</td><td><span class="val val-disable">Disable</span></td><td>Speculatively exits C-state before interrupt  -  adds non-determinism</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>C-State Auto Demotion</td><td><span class="val val-disable">Disable</span></td><td>OS requests deep C-state but HW demotes to shallower one</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>C-State Un-demotion</td><td><span class="val val-disable">Disable</span></td><td>Reverses auto-demotion when idle period is long enough</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Package C-State Demotion</td><td><span class="val val-disable">Disable</span></td><td>Package-level equivalent of core auto-demotion</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Package C-State Un-demotion</td><td><span class="val val-disable">Disable</span></td><td>Package-level equivalent of core un-demotion</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="C0/C1"><td>Package C State Limit</td><td><span class="val val-set">C0/C1</span></td><td>Shallowest allowed  -  prevents any package state deeper than C1</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Run-time C7 Allowed</td><td><span class="val val-disable">Disable</span></td><td>Allows iGPU to request package C7 at runtime</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>MonitorMWait</td><td><span class="val val-disable">Disable</span></td><td>MONITOR/MWAIT instruction pair for C-state entry  -  can prevent boot on some boards</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>MWAIT Redirection</td><td><span class="val val-disable">Disable</span></td><td>Redirects I/O-based C-state requests to MWAIT</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>S0ix Auto Demotion</td><td><span class="val val-disable">Disable</span></td><td><a href="https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/modern-standby" target="_blank" rel="noopener">Modern Standby</a> sub-state auto demotion</td><td class="col-toggle toggle-cell"></td></tr>
     </tbody>
   </table>
   </div>
@@ -420,60 +452,62 @@
   <table class="ref-only">
     <thead><tr><th>Setting</th><th>Value</th><th>Notes</th><th class="col-toggle"></th></tr></thead>
     <tbody>
-      <tr data-action="disable"><td>EIST / CPU EIST Function</td><td><span class="val val-disable">Disable</span></td><td>Enhanced Intel SpeedStep - frequency scaling</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>SpeedStep</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Intel Speed Shift Technology</td><td><span class="val val-disable">Disable</span></td><td>Keep ENABLED on W11 23H2+ with E-cores - required for Thread Director</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Intel Speed Shift Tech Interrupt Control</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Intel Adaptive Boost Technology</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Race To Halt (RTH)</td><td><span class="val val-disable">Disable</span></td><td>Rushes to idle for power savings</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Voltage Optimization</td><td><span class="val val-disable">Disable</span></td><td>Static voltage is better for latency</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>TVB Voltage Optimizations</td><td><span class="val val-disable">Disable</span></td><td>Voltage optimization during turbo</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>TVB Ratio Clipping</td><td><span class="val val-disable">Disable</span></td><td>Downclocks frequency on high temp</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>BCLK Aware Adaptive Voltage</td><td><span class="val val-disable">Disable</span></td><td>Interferes with static OC</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Dual Tau Boost</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>RSR</td><td><span class="val val-disable">Disable</span></td><td>Lowers clock on high voltage/temp</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Energy Efficient P-state</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Energy Efficient Turbo</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Energy Performance Gain</td><td><span class="val val-disable">Disable</span></td><td>Affects RAM latency</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>P-state Capping</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Bi-Directional PROCHOT</td><td><span class="val val-disable">Disable</span></td><td>Reduces frequency on high temps</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="enable"><td>Disable PROCHOT# Output</td><td><span class="val val-enable">Enable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>PROCHOT Response</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>PROCHOT Lock</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Intel Adaptive Thermal Monitor</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Thermal Monitor</td><td><span class="val val-disable">Disable</span></td><td>Only if you are NOT overheating</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="set" data-target="Manual"><td>Thermal Throttling Level</td><td><span class="val val-set">Manual</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="valuezero"><td>T0 / T1 / T2 Level</td><td><span class="val val-set">0</span></td><td>All three</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="valuezero"><td>TCC Activation Offset</td><td><span class="val val-set">0</span></td><td>Higher = lower throttle temp</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Vmax Stress</td><td><span class="val val-disable">Disable</span></td><td>Frequency throttling at max voltage</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>HDC Control</td><td><span class="val val-disable">Disable</span></td><td>Hardware Duty Cycling</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>ACPI T-States</td><td><span class="val val-disable">Disable</span></td><td>Throttle states / set to 0</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>DPTF</td><td><span class="val val-disable">Disable</span></td><td>Dynamic Platform Thermal Framework</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Ring to Core offset (Down Bin)</td><td><span class="val val-disable">Disable</span></td><td>Helps with OC</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Ring Down Bin</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Platform PL1 Enable</td><td><span class="val val-disable">Disable</span></td><td>Power limit 1</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Platform PL2 Enable</td><td><span class="val val-disable">Disable</span></td><td>Power limit 2</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>CS PL1 Limit</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>TDC Enable</td><td><span class="val val-disable">Disable</span></td><td>Thermal Design Current limit</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Cdynmax Clamping Enable</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Acoustic Noise Mitigation</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Power Loss Notification Feature</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Enable Hibernation</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="set" data-target="Suspend Disabled"><td>ACPI Sleep State / Standby State</td><td><span class="val val-set">Suspend Disabled</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Low Power S0 Idle Capability</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Modern StandBy</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="enable"><td>SLP_S0# Override</td><td><span class="val val-enable">Enable</span></td><td>Test</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>ErP Ready</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="enable"><td>Power Off Energy Saving</td><td><span class="val val-enable">Enable</span></td><td>Keep on so connected devices don't draw power in S5</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Power Loading</td><td><span class="val val-disable">Disable</span></td><td>Small load on PSU at idle - unnecessary</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>PCH Energy Reporting</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="enable"><td>Disable Energy Reporting</td><td><span class="val val-enable">Enable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>EC Low Power Mode</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>EC Notification</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Sensor Standby</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>LakeTiny Feature</td><td><span class="val val-disable">Disable</span></td><td>Battery power saver - laptops</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>DeepSx Power Policies</td><td><span class="val val-disable">Disable</span></td><td>All entries - deep sleep states</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="set" data-target="Power Off"><td>Restore AC Power Loss</td><td><span class="val val-set">Power Off</span></td><td>Behavior after power outage</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-no-preset><td>EIST / CPU EIST Function</td><td><span class="val val-disable">Disable</span></td><td>Enhanced Intel SpeedStep - WARNING: disabling with SpeedShift off can lock CPU at base clock on some boards. Only disable if you have a fixed OC</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-no-preset><td>SpeedStep</td><td><span class="val val-disable">Disable</span></td><td>Same as EIST above - only disable if frequency is locked via OC</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-no-preset><td>Intel Speed Shift Technology</td><td><span class="val val-disable">Disable</span></td><td>HWP - WARNING: disabling can lock CPU at base clock on many boards</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-no-preset><td>Intel Speed Shift Tech Interrupt Control</td><td><span class="val val-disable">Disable</span></td><td>Only relevant if SpeedShift is enabled</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Intel Adaptive Boost Technology</td><td><span class="val val-disable">Disable</span></td><td>ABT  -  auto-raises all-core turbo when thermal headroom exists; non-deterministic</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Race To Halt (RTH)</td><td><span class="val val-disable">Disable</span></td><td>Boosts frequency to finish work faster then drops to deep C-state  -  trades latency for power</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Voltage Optimization</td><td><span class="val val-disable">Disable</span></td><td>Dynamic Vcore adjustment  -  introduces voltage transitions that add latency jitter</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>TVB Voltage Optimizations</td><td><span class="val val-disable">Disable</span></td><td>Thermal Velocity Boost voltage scaling  -  adjusts Vcore based on temperature</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>TVB Ratio Clipping</td><td><span class="val val-disable">Disable</span></td><td>TVB reduces multiplier when Tjunction exceeds threshold</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Thermal Velocity Boost</td><td><span class="val val-disable">Disable</span></td><td>Master TVB toggle - reduces frequency based on package temp; disable for OC above default max turbo</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Enhanced Thermal Velocity Boost</td><td><span class="val val-disable">Disable</span></td><td>Extended TVB - clips ratio at default thermal threshold; disable for overclocking</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>BCLK Aware Adaptive Voltage</td><td><span class="val val-disable">Disable</span></td><td>Shifts V/F curve when BCLK deviates from 100 MHz  -  interferes with static OC</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Dual Tau Boost</td><td><span class="val val-disable">Disable</span></td><td>Two-phase PL2 turbo budget with separate short/long time constants</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>RSR</td><td><span class="val val-disable">Disable</span></td><td>Running Set-point Reduction  -  lowers ratio when voltage/temp are high</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Energy Efficient P-state</td><td><span class="val val-disable">Disable</span></td><td>Lets CPU select a lower P-state than OS requested to save power</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Energy Efficient Turbo</td><td><span class="val val-disable">Disable</span></td><td>Caps turbo below max when workload doesn't justify full boost</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Energy Performance Gain</td><td><span class="val val-disable">Disable</span></td><td>Biases EPP toward efficiency  -  measured to affect memory latency on some configs</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>P-state Capping</td><td><span class="val val-disable">Disable</span></td><td>Limits maximum P-state based on power/thermal budget</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Bi-Directional PROCHOT</td><td><span class="val val-disable">Disable</span></td><td>External devices (VRM, PCH) can assert PROCHOT# to throttle CPU</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>Disable PROCHOT# Output</td><td><span class="val val-enable">Enable</span></td><td>Prevents CPU from asserting PROCHOT# to other components</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PROCHOT Response</td><td><span class="val val-disable">Disable</span></td><td>CPU response to incoming PROCHOT# signal</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PROCHOT Lock</td><td><span class="val val-disable">Disable</span></td><td>Locks PROCHOT# configuration  -  prevents OS from changing it</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Intel Adaptive Thermal Monitor</td><td><span class="val val-disable">Disable</span></td><td>TM2  -  reduces frequency and voltage on thermal trip; <a href="https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html" target="_blank" rel="noopener">Intel SDM Vol 3 §15.5</a></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Thermal Monitor</td><td><span class="val val-disable">Disable</span></td><td>TM1  -  inserts clock stop cycles at Tjunction; only disable with adequate cooling</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Manual"><td>Thermal Throttling Level</td><td><span class="val val-set">Manual</span></td><td>Manual control over T-state duty cycle percentages</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="valuezero"><td>T0 / T1 / T2 Level</td><td><span class="val val-set">0</span></td><td>Duty cycle thresholds for each T-state level  -  all three to 0</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="valuezero"><td>TCC Activation Offset</td><td><span class="val val-set">0</span></td><td>Lowers thermal throttle point by N°C below Tjmax  -  0 = throttle at Tjmax only</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Vmax Stress</td><td><span class="val val-disable">Disable</span></td><td>Throttles frequency when Vcore approaches max safe voltage</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>HDC Control</td><td><span class="val val-disable">Disable</span></td><td>Hardware Duty Cycling  -  forces idle cycles to limit power draw</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>ACPI T-States</td><td><span class="val val-disable">Disable</span></td><td>ACPI throttle states  -  OS-requested clock modulation duty cycling</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>DPTF</td><td><span class="val val-disable">Disable</span></td><td>Intel Dynamic Platform and Thermal Framework  -  policy-based thermal management</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Ring to Core offset (Down Bin)</td><td><span class="val val-disable">Disable</span></td><td>Allows ring bus to run below core ratio  -  keeps ring locked to core frequency</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Ring Down Bin</td><td><span class="val val-disable">Disable</span></td><td>Alternate entry for ring ratio down-bin</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Platform PL1 Enable</td><td><span class="val val-disable">Disable</span></td><td>Sustained power limit (long-term TDP cap)</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Platform PL2 Enable</td><td><span class="val val-disable">Disable</span></td><td>Burst power limit (short-term turbo cap)</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CS PL1 Limit</td><td><span class="val val-disable">Disable</span></td><td>Connected Standby power limit</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>TDC Enable</td><td><span class="val val-disable">Disable</span></td><td>Thermal Design Current  -  caps sustained current draw to protect VRM</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Cdynmax Clamping Enable</td><td><span class="val val-disable">Disable</span></td><td>Clamps max dynamic capacitance estimate  -  limits turbo power budget</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Acoustic Noise Mitigation</td><td><span class="val val-disable">Disable</span></td><td>Slew-rate limits on frequency/voltage transitions to reduce coil whine</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Power Loss Notification Feature</td><td><span class="val val-disable">Disable</span></td><td>Generates SMI on AC power loss detection</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Enable Hibernation</td><td><span class="val val-disable">Disable</span></td><td>S4 state  -  saves RAM to disk and powers off; adds hiberfil.sys disk usage</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Suspend Disabled"><td>ACPI Sleep State / Standby State</td><td><span class="val val-set">Suspend Disabled</span></td><td>Disables S3 (suspend-to-RAM)  -  system stays in S0 or goes to S5</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Low Power S0 Idle Capability</td><td><span class="val val-disable">Disable</span></td><td>Required for <a href="https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/modern-standby" target="_blank" rel="noopener">Modern Standby</a>  -  reports S0ix support to OS</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Modern StandBy</td><td><span class="val val-disable">Disable</span></td><td>Replaces S3 with S0 low-power idle  -  wakes for network/updates</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>SLP_S0# Override</td><td><span class="val val-enable">Enable</span></td><td>Overrides SLP_S0# pin assertion  -  forces PCH to stay in S0 instead of signaling sleep</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>ErP Ready</td><td><span class="val val-disable">Disable</span></td><td>EU Energy-related Products directive  -  cuts S5 standby power below 0.5W by disabling wake features</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>Power Off Energy Saving</td><td><span class="val val-enable">Enable</span></td><td>Cuts power to USB/PCIe in S5 so peripherals don't draw standby current</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Power Loading</td><td><span class="val val-disable">Disable</span></td><td>Applies dummy load to PSU at idle to stabilize rail voltage  -  unnecessary with modern PSUs</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PCH Energy Reporting</td><td><span class="val val-disable">Disable</span></td><td>PCH reports power consumption via RAPL interface</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>Disable Energy Reporting</td><td><span class="val val-enable">Enable</span></td><td>Disables RAPL energy counter telemetry to OS</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>EC Low Power Mode</td><td><span class="val val-disable">Disable</span></td><td>Embedded Controller enters low-power polling  -  primarily laptop</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>EC Notification</td><td><span class="val val-disable">Disable</span></td><td>EC sends power state change notifications</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Sensor Standby</td><td><span class="val val-disable">Disable</span></td><td>Puts onboard sensors (ambient, VRM temp) into standby when idle</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>LakeTiny Feature</td><td><span class="val val-disable">Disable</span></td><td>Ultra-low-power idle for battery devices  -  laptop only</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-keywords="deepsx"><td>DeepSx Power Policies</td><td><span class="val val-disable">Disable</span></td><td>All entries  -  PCH deep sleep states that cut Vcc to minimum retention levels</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Power Off"><td>Restore AC Power Loss</td><td><span class="val val-set">Power Off</span></td><td>System stays off after AC power returns  -  prevents unattended boot</td><td class="col-toggle toggle-cell"></td></tr>
     </tbody>
   </table>
   </div>
@@ -487,38 +521,38 @@
   <table class="ref-only">
     <thead><tr><th>Setting</th><th>Value</th><th>Notes</th><th class="col-toggle"></th></tr></thead>
     <tbody>
-      <tr data-action="disable"><td>Hyper-Threading</td><td><span class="val val-disable">Disable</span></td><td>If 6+ cores; keep on if CPU-bound at 99%</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Hardware Prefetcher</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Adjacent Cache Line Prefetch</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="set" data-target="RUN Loop"><td>AP Threads Idle Manner</td><td><span class="val val-set">RUN Loop</span></td><td>Better smoothness/mouse feel (Intel only)</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="set" data-target="Turbo Performance"><td>Boot Performance Mode</td><td><span class="val val-set">Turbo Performance</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="set" data-target="Fixed Priority"><td>Interrupt Redirection Mode Selection</td><td><span class="val val-set">Fixed Priority</span></td><td>IOAPIC delivery mode - minimal impact with MSI enabled; Fixed avoids TPR arbitration, Round Robin may not actually rotate on modern Intel</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="set" data-target="Manual"><td>Stop Grant Configuration</td><td><span class="val val-set">Manual</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="enable"><td>Limit CPUID Maximum</td><td><span class="val val-enable">Enable</span></td><td>Legacy OS compat - sends less info to OS</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Intel (VMX) Virtualization Technology</td><td><span class="val val-disable">Disable</span></td><td>Re-enable if you need VMs</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>VT-d</td><td><span class="val val-disable">Disable</span></td><td>I/O virtualization</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Execute Disable Bit</td><td><span class="val val-disable">Disable</span></td><td>Security feature - NX bit</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>MachineCheck</td><td><span class="val val-disable">Disable</span></td><td>Can prevent boot - hardware error detection</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Machine Check</td><td><span class="val val-disable">Disable</span></td><td>Alternate entry</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>HW Notification</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>BIST</td><td><span class="val val-disable">Disable</span></td><td>Built-in self test</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Hyper-Threading</td><td><span class="val val-disable">Disable</span></td><td>SMT  -  two logical cores per physical; disable if 6+ cores unless consistently CPU-bound at 99%</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Hardware Prefetcher</td><td><span class="val val-disable">Disable</span></td><td>L2 streamer prefetch (MSR 0x1A4 bit 0)  -  can evict useful cache lines with speculative fetches</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Adjacent Cache Line Prefetch</td><td><span class="val val-disable">Disable</span></td><td>Fetches neighboring 64B cache line on every miss  -  doubles bandwidth per access</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="RUN Loop"><td>AP Threads Idle Manner</td><td><span class="val val-set">RUN Loop</span></td><td>Application Processors spin in RUN loop instead of HLT/MWAIT  -  avoids C-state exit latency on wake</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Turbo Performance"><td>Boot Performance Mode</td><td><span class="val val-set">Turbo Performance</span></td><td>CPU starts POST at max turbo ratio instead of LFM</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Fixed Priority"><td>Interrupt Redirection Mode Selection</td><td><span class="val val-set">Fixed Priority</span></td><td>IOAPIC delivery mode  -  minimal impact with MSI; Fixed avoids TPR arbitration; <a href="https://pdos.csail.mit.edu/6.828/2016/readings/ia32/ioapic.pdf" target="_blank" rel="noopener">82093AA §2.4</a></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Manual"><td>Stop Grant Configuration</td><td><span class="val val-set">Manual</span></td><td>Manual control over stop-clock grant cycles issued during bus idle</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>Limit CPUID Maximum</td><td><span class="val val-enable">Enable</span></td><td>Caps CPUID leaf enumeration  -  reduces OS feature detection surface</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Intel (VMX) Virtualization Technology</td><td><span class="val val-disable">Disable</span></td><td>Hardware-assisted virtualization (VMX root/non-root)  -  re-enable for VMs or WSL2</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>VT-d</td><td><span class="val val-disable">Disable</span></td><td>IOMMU DMA remapping for device isolation  -  required for passthrough VMs</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Execute Disable Bit</td><td><span class="val val-disable">Disable</span></td><td>NX/XD bit  -  marks memory pages as non-executable to prevent code injection</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>MachineCheck</td><td><span class="val val-disable">Disable</span></td><td>MCE/MCA  -  CPU hardware error detection and reporting; can cause boot failures on OC</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Machine Check</td><td><span class="val val-disable">Disable</span></td><td>Alternate entry for MCE</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>HW Notification</td><td><span class="val val-disable">Disable</span></td><td>ACPI hardware error notification via SCI/NMI</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>BIST</td><td><span class="val val-disable">Disable</span></td><td>Built-In Self Test  -  CPU runs diagnostics at power-on; adds POST time</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>BIST Enable</td><td><span class="val val-disable">Disable</span></td><td>Alternate BIST entry</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="enable"><td>X2APIC Opt Out</td><td><span class="val val-enable">Enable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="valuezero"><td>Number of Stop Grant Cycles</td><td><span class="val val-set">0</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="enable"><td>CPU Replaced Polling Disable</td><td><span class="val val-enable">Enable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="set" data-target="TRUE"><td>Disable Fast PKG C State Ramp for IA Domain</td><td><span class="val val-set">TRUE</span></td><td>Disables fast ramp during deeper C-states</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="set" data-target="TRUE"><td>Disable Fast PKG C State Ramp for GT Domain</td><td><span class="val val-set">TRUE</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="set" data-target="TRUE"><td>Disable Fast PKG C State Ramp for SA Domain</td><td><span class="val val-set">TRUE</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="set" data-target="TRUE"><td>Disable Fast PKG C State Ramp for VccIn Domain</td><td><span class="val val-set">TRUE</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Intel(R) SpeedStep(tm)</td><td><span class="val val-disable">Disable</span></td><td>EIST - frequency scaling (exact NVRAM name)</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Intel(R) Speed Shift Technology</td><td><span class="val val-disable">Disable</span></td><td>HWP - keep ENABLED on W11 23H2+ with E-cores for Thread Director</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Intel(R) Speed Shift Technology Interrupt Control</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>PS3 Enable</td><td><span class="val val-disable">Disable</span></td><td>Power state 3 - all entries</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>PS4 Enable</td><td><span class="val val-disable">Disable</span></td><td>Power state 4 - all entries</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Power Gating</td><td><span class="val val-disable">Disable</span></td><td>All entries</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>JTAG C10 Power Gate</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>ACPI 5.0 CPPC Support</td><td><span class="val val-disable">Disable</span></td><td>Collaborative Processor Performance Control</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="set" data-target="Extreme"><td>CPU Power Phase Control</td><td><span class="val val-set">Extreme</span></td><td>VRM phase shedding - Extreme keeps all phases active</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>X2APIC Opt Out</td><td><span class="val val-enable">Enable</span></td><td>Opts out of x2APIC mode  -  forces xAPIC (legacy) interrupt controller mode</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="valuezero"><td>Number of Stop Grant Cycles</td><td><span class="val val-set">0</span></td><td>Bus cycles between stop-grant acknowledge and clock stop  -  0 = immediate</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>CPU Replaced Polling Disable</td><td><span class="val val-enable">Enable</span></td><td>Disables firmware polling for CPU hot-swap detection</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="TRUE"><td>Disable Fast PKG C State Ramp for IA Domain</td><td><span class="val val-set">TRUE</span></td><td>Prevents fast voltage ramp during package C-state transitions for CPU cores</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="TRUE"><td>Disable Fast PKG C State Ramp for GT Domain</td><td><span class="val val-set">TRUE</span></td><td>Same for iGPU (Graphics Technology) domain</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="TRUE"><td>Disable Fast PKG C State Ramp for SA Domain</td><td><span class="val val-set">TRUE</span></td><td>Same for System Agent (memory controller, PCIe root) domain</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="TRUE"><td>Disable Fast PKG C State Ramp for VccIn Domain</td><td><span class="val val-set">TRUE</span></td><td>Same for VccIn (input voltage rail) domain</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-no-preset><td>Intel(R) SpeedStep(tm)</td><td><span class="val val-disable">Disable</span></td><td>EIST (exact NVRAM name) - WARNING: disabling with SpeedShift off can lock CPU at base clock. Only disable if you have a fixed OC</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-no-preset><td>Intel(R) Speed Shift Technology</td><td><span class="val val-disable">Disable</span></td><td>HWP (exact NVRAM name) - WARNING: disabling can lock CPU at base clock on many boards</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-no-preset><td>Intel(R) Speed Shift Technology Interrupt Control</td><td><span class="val val-disable">Disable</span></td><td>Only relevant if SpeedShift is enabled</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PS3 Enable</td><td><span class="val val-disable">Disable</span></td><td>PCIe/SATA link power state 3  -  device enters low-power standby</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PS4 Enable</td><td><span class="val val-disable">Disable</span></td><td>PCIe/SATA link power state 4  -  deeper standby, longer exit latency</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-keywords="power gate"><td>Power Gating</td><td><span class="val val-disable">Disable</span></td><td>All entries  -  cuts power to idle IP blocks; adds wake latency per block</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>JTAG C10 Power Gate</td><td><span class="val val-disable">Disable</span></td><td>Gates JTAG debug port power in deepest C-state</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>ACPI 5.0 CPPC Support</td><td><span class="val val-disable">Disable</span></td><td>CPPC  -  OS and firmware co-manage performance states; used primarily on AMD but exists in some Intel firmware</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Extreme"><td>CPU Power Phase Control</td><td><span class="val val-set">Extreme</span></td><td>VRM phase management  -  Extreme keeps all power phases active, preventing phase shedding transients</td><td class="col-toggle toggle-cell"></td></tr>
     </tbody>
   </table>
   </div>
@@ -532,37 +566,45 @@
   <table class="ref-only">
     <thead><tr><th>Setting</th><th>Value</th><th>Notes</th><th class="col-toggle"></th></tr></thead>
     <tbody>
-      <tr data-action="set" data-target="No Power Down"><td>Power Down Mode</td><td><span class="val val-set">No Power Down</span></td><td>Helps latency significantly</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="set" data-target="Disable"><td>DDR PowerDown and idle counter</td><td><span class="val val-set">Disable / PCODE</span></td><td>Shaves ns off RAM latency</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="set" data-target="Disable"><td>For LPDDR: DDR PowerDown and idle counter</td><td><span class="val val-set">Disable / PCODE</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="valuezero"><td>PowerDown Energy Ch0Dimm0</td><td><span class="val val-set">0</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="No Power Down"><td>Power Down Mode</td><td><span class="val val-set">No Power Down</span></td><td>DRAM CKE power-down  -  ranks stay active; measurably reduces memory access latency</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="PCODE"><td>DDR PowerDown and idle counter</td><td><span class="val val-set">PCODE</span></td><td>Set to PCODE - lets pcode manage CKE modes instead of BIOS; prevents rank power-down</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="PCODE"><td>For LPDDR: DDR PowerDown and idle counter</td><td><span class="val val-set">PCODE</span></td><td>LPDDR variant of above</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="valuezero"><td>PowerDown Energy Ch0Dimm0</td><td><span class="val val-set">0</span></td><td>Energy weight for power-down decision  -  0 removes incentive to enter power-down</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="valuezero"><td>PowerDown Energy Ch0Dimm1</td><td><span class="val val-set">0</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="valuezero"><td>PowerDown Energy Ch1Dimm0</td><td><span class="val val-set">0</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="valuezero"><td>PowerDown Energy Ch1Dimm1</td><td><span class="val val-set">0</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="valuezero"><td>EPG DIMM Idd3N</td><td><span class="val val-set">0</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="valuezero"><td>EPG DIMM Idd3P</td><td><span class="val val-set">0</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Command Tristate</td><td><span class="val val-disable">Disable</span></td><td>DRAM power saving</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>SelfRefresh Enable</td><td><span class="val val-disable">Disable</span></td><td>Helps input; can cause boot/restart issues on low-end boards</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Per Bank Refresh</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>LPMode</td><td><span class="val val-disable">Disable</span></td><td>Low power mode for DRAM</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>ECC Support</td><td><span class="val val-disable">Disable</span></td><td>Error correction - test after disabling</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>In-Band ECC Support</td><td><span class="val val-disable">Disable</span></td><td>DDR5 on-die ECC - uses bandwidth</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Write Voltage Centering 1D</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Write Voltage Centering 2D</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Read Voltage Centering 1D</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Read Voltage Centering 2D</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Command Voltage Centering</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Early Command Voltage Centering</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="enable"><td>Throttler CKEMin Defeature</td><td><span class="val val-enable">Enable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="enable"><td>For LPDDR Only: Throttler CKEMin Defeature</td><td><span class="val val-enable">Enable</span></td><td>Alternate entry for LPDDR boards</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="set" data-target="Disabled"><td>Row Hammer Mode</td><td><span class="val val-set">Disabled</span></td><td>Disables RFM/pTRR mitigation - zero overhead, safe for desktop use</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Enable RH Prevention</td><td><span class="val val-disable">Disable</span></td><td>Software-side RH prevention - overhead with no benefit when Mode is off</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Memory Thermal Management</td><td><span class="val val-disable">Disable</span></td><td>Experimental</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>LPDDR Thermal Sensor</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="set" data-target="Active Low"><td>ChipSelect 0 polarity (x3)</td><td><span class="val val-set">Active Low</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="set" data-target="BIT6"><td>Ch Hash Interleaved Bit</td><td><span class="val val-set">BIT6</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="valuezero"><td>HEBC value</td><td><span class="val val-set">0</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="valuezero"><td>Idle Energy Ch0Dimm0/1, Ch1Dimm0/1</td><td><span class="val val-set">0</span></td><td>Experimental - all four to 0</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="valuezero"><td>EPG DIMM Idd3N</td><td><span class="val val-set">0</span></td><td>JEDEC IDD3N  -  active standby current used in power-down scheduling; 0 disables EPG calc</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="valuezero"><td>EPG DIMM Idd3P</td><td><span class="val val-set">0</span></td><td>JEDEC IDD3P  -  precharge power-down current; 0 disables EPG calc</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Command Tristate</td><td><span class="val val-disable">Disable</span></td><td>Floats CMD/ADDR bus when rank idle  -  saves power but adds reactivation delay</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>SelfRefresh Enable</td><td><span class="val val-disable">Disable</span></td><td>Allows DRAM self-refresh (CKE low)  -  can cause boot issues on some boards</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Per Bank Refresh</td><td><span class="val val-disable">Disable</span></td><td>Refreshes individual banks instead of all-bank REF  -  lower peak latency but more frequent stalls</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>LPMode</td><td><span class="val val-disable">Disable</span></td><td>DRAM low-power mode  -  reduces I/O drive strength and frequency at idle</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>ECC Support</td><td><span class="val val-disable">Disable</span></td><td>SECDED error correction  -  uses extra bits per cacheline; test stability after disabling</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>In-Band ECC Support</td><td><span class="val val-disable">Disable</span></td><td>DDR5 on-die ECC  -  borrows memory bandwidth for inline error correction</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Write Voltage Centering 1D</td><td><span class="val val-disable">Disable</span></td><td>MRC training  -  sweeps write Vref to find optimal eye center; disable after stable OC</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Write Voltage Centering 2D</td><td><span class="val val-disable">Disable</span></td><td>2D write eye optimization (voltage + timing)</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Read Voltage Centering 1D</td><td><span class="val val-disable">Disable</span></td><td>MRC training  -  sweeps read Vref for optimal eye center</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Read Voltage Centering 2D</td><td><span class="val val-disable">Disable</span></td><td>2D read eye optimization (voltage + timing)</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Command Voltage Centering</td><td><span class="val val-disable">Disable</span></td><td>MRC training  -  optimizes CMD/ADDR signal voltage margins</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Early Command Voltage Centering</td><td><span class="val val-disable">Disable</span></td><td>Pre-training CMD voltage sweep  -  runs before main MRC</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>Throttler CKEMin Defeature</td><td><span class="val val-enable">Enable</span></td><td>Disables minimum CKE assertion time throttler  -  removes DRAM scheduling constraint</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>For LPDDR Only: Throttler CKEMin Defeature</td><td><span class="val val-enable">Enable</span></td><td>LPDDR variant of above</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Disabled"><td>Row Hammer Mode</td><td><span class="val val-set">Disabled</span></td><td>Disables RFM/pTRR row-hammer mitigation  -  eliminates extra refresh overhead; safe for desktop</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Enable RH Prevention</td><td><span class="val val-disable">Disable</span></td><td>Software-side row-hammer prevention  -  no benefit when hardware mode is off</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Memory Thermal Management</td><td><span class="val val-disable">Disable</span></td><td>Throttles DRAM commands when DIMM temperature exceeds threshold</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>LPDDR Thermal Sensor</td><td><span class="val val-disable">Disable</span></td><td>On-die temperature sensor for LPDDR DIMMs</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Active Low"><td>ChipSelect 0 polarity (x3)</td><td><span class="val val-set">Active Low</span></td><td>CS# signal polarity  -  Active Low is standard DDR signaling convention</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="BIT6"><td>Ch Hash Interleaved Bit</td><td><span class="val val-set">BIT6</span></td><td>Address bit used for channel interleaving hash  -  BIT6 aligns to cacheline boundary</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="valuezero"><td>HEBC value</td><td><span class="val val-set">0</span></td><td>Host Enhanced Burst Chop  -  0 disables burst truncation, always full burst length</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="valuezero"><td>Idle Energy Ch0Dimm0/1, Ch1Dimm0/1</td><td><span class="val val-set">0</span></td><td>Idle power weight per DIMM slot - 0 removes idle power-down scheduling incentive</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Fine Granularity Refresh</td><td><span class="val val-disable">Disable</span></td><td>JEDEC fine-grained refresh - trades bandwidth for thermal margin; disable for max throughput</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>Extended Bank Hashing</td><td><span class="val val-enable">Enable</span></td><td>Wider address hash for bank interleaving - distributes accesses more evenly across banks</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="NORMAL Refresh"><td>MC Refresh Rate</td><td><span class="val val-set">NORMAL Refresh</span></td><td>Memory controller refresh rate - higher rates trade bandwidth for thermal safety</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>REFRESH_2X_MODE</td><td><span class="val val-disable">Disable</span></td><td>Doubles DRAM refresh rate at warm/hot temps - halves available bandwidth during refresh</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>VC1 Read Metering</td><td><span class="val val-disable">Disable</span></td><td>Virtual Channel 1 read metering - throttles VC1 reads to prioritize VC0; disable if not using iGPU</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>RFI Mitigation</td><td><span class="val val-disable">Disable</span></td><td>DDR RFI mitigation for wireless coexistence - temporarily slows DDR speed to reduce interference</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>DLVR RFI Mitigation</td><td><span class="val val-disable">Disable</span></td><td>Digital Linear Voltage Regulator RFI mitigation - modulates DLVR frequency for EMI; disable if not using onboard wireless</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>Low Latency</td><td><span class="val val-enable">Enable</span></td><td>MRC low-latency mode - optimizes memory controller scheduling for latency over bandwidth</td><td class="col-toggle toggle-cell"></td></tr>
     </tbody>
   </table>
   </div>
@@ -576,50 +618,50 @@
   <table class="ref-only">
     <thead><tr><th>Setting</th><th>Value</th><th>Notes</th><th class="col-toggle"></th></tr></thead>
     <tbody>
-      <tr data-action="disable"><td>ASPM</td><td><span class="val val-disable">Disable</span></td><td>Active State Power Management - all entries</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>PEG - ASPM</td><td><span class="val val-disable">Disable</span></td><td>PEG0/1/2 ASPM entries</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Native ASPM</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>DMI ASPM</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>DMI Link ASPM Control</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>DMI Gen3 ASPM</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>ALL LTRs</td><td><span class="val val-disable">Disable</span></td><td>Latency Tolerance Reporting - all entries; may affect smoothness</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>LTR Mechanism Enable</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>LTR</td><td><span class="val val-disable">Disable</span></td><td>Individual LTR entries per port</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Force LTR Override</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>LTR Lock</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>ALL OBFF</td><td><span class="val val-disable">Disable</span></td><td>Optimized Buffer Flush/Fill</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>L1 Substates</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>L1 Low</td><td><span class="val val-disable">Disable</span></td><td>PCIe L1 Low substate - power saving on idle links</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>PCI Express Clock Gating</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>PCI Express Power Gating</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Clock Power Management</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>PCIe Spread Spectrum Clocking</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>PCIE Spread Spectrum</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>PCIE/DMI Spread Spectrum</td><td><span class="val val-disable">Disable</span></td><td>Alternate entry</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="enable"><td>ARI Forwarding</td><td><span class="val val-enable">Enable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="test"><td>Re-Size BAR Support</td><td><span class="val val-test">Test</span></td><td>Can help or hurt GPU perf depending on game/driver - benchmark both</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="enable"><td>PCI Delay Optimization</td><td><span class="val val-enable">Enable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Link Training Retry</td><td><span class="val val-disable">Disable</span></td><td>Or set to 2</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>DMA Enable</td><td><span class="val val-disable">Disable</span></td><td>All entries</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>ACS</td><td><span class="val val-disable">Disable</span></td><td>Access Control Services - all entries</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>PTM</td><td><span class="val val-disable">Disable</span></td><td>Precision Time Measurement - all entries</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>DPC</td><td><span class="val val-disable">Disable</span></td><td>Downstream Port Containment - all entries</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>EDPC</td><td><span class="val val-disable">Disable</span></td><td>Enhanced DPC - all entries</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Snoop Latency Override</td><td><span class="val val-disable">Disable</span></td><td>All entries</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Non Snoop Latency Override</td><td><span class="val val-disable">Disable</span></td><td>All entries</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="set" data-target="1 ns"><td>Snoop Latency Multiplier (all)</td><td><span class="val val-set">0x0 (1 ns)</span></td><td>Testing - set all entries</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="valuezero"><td>Snoop Latency Value (all)</td><td><span class="val val-set">0x0</span></td><td>Testing - set all entries</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="set" data-target="1 ns"><td>Non Snoop Latency Multiplier (all)</td><td><span class="val val-set">0x0 (1 ns)</span></td><td>Testing - set all entries</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="valuezero"><td>Non Snoop Latency Value (all)</td><td><span class="val val-set">0x0</span></td><td>Testing - set all entries</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>PEP CPU</td><td><span class="val val-disable">Disable</span></td><td>Power Engine Plug-in entries</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-keywords="aspm"><td>ASPM</td><td><span class="val val-disable">Disable</span></td><td>Active State Power Management  -  L0s/L1 link idle states; all entries; adds exit latency per link</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEG - ASPM</td><td><span class="val val-disable">Disable</span></td><td>ASPM for PCI Express Graphics slots (PEG0/1/2)</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Native ASPM</td><td><span class="val val-disable">Disable</span></td><td>Lets OS control ASPM via _OSC method instead of BIOS</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>DMI ASPM</td><td><span class="val val-disable">Disable</span></td><td>ASPM on the CPU↔PCH DMI link</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>DMI Link ASPM Control</td><td><span class="val val-disable">Disable</span></td><td>Alternate DMI ASPM control entry</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>DMI Gen3 ASPM</td><td><span class="val val-disable">Disable</span></td><td>Gen3-specific DMI ASPM variant</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-keywords="ltr"><td>ALL LTRs</td><td><span class="val val-disable">Disable</span></td><td>Latency Tolerance Reporting  -  devices tell PCH how much latency they tolerate; enables deeper power states</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>LTR Mechanism Enable</td><td><span class="val val-disable">Disable</span></td><td>Master LTR mechanism toggle</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>LTR</td><td><span class="val val-disable">Disable</span></td><td>Per-port LTR entries</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Force LTR Override</td><td><span class="val val-disable">Disable</span></td><td>Forces firmware LTR values over device-reported ones</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>LTR Lock</td><td><span class="val val-disable">Disable</span></td><td>Locks LTR configuration  -  prevents OS from changing values</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-keywords="obff"><td>ALL OBFF</td><td><span class="val val-disable">Disable</span></td><td>Optimized Buffer Flush/Fill  -  signals devices to batch DMA when host is in low-power</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-keywords="l1 substate"><td>L1 Substates</td><td><span class="val val-disable">Disable</span></td><td>L1.1/L1.2 PCIe substates  -  deeper link power savings than L1 alone</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>L1 Low</td><td><span class="val val-disable">Disable</span></td><td>L1 Low substate  -  reduces PHY power on idle links</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-keywords="clock gate"><td>PCI Express Clock Gating</td><td><span class="val val-disable">Disable</span></td><td>Gates reference clock to idle PCIe ports</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-keywords="power gate"><td>PCI Express Power Gating</td><td><span class="val val-disable">Disable</span></td><td>Cuts power to unused PCIe port PHYs</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Clock Power Management</td><td><span class="val val-disable">Disable</span></td><td>PCIe CLKREQ#  -  allows devices to request clock shutdown</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-keywords="spread spectrum"><td>PCIe Spread Spectrum Clocking</td><td><span class="val val-disable">Disable</span></td><td>SSC  -  modulates PCIe refclock ±0.5% for EMI compliance; adds jitter to link</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PCIE Spread Spectrum</td><td><span class="val val-disable">Disable</span></td><td>Alternate SSC entry</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PCIE/DMI Spread Spectrum</td><td><span class="val val-disable">Disable</span></td><td>SSC for both PCIe and DMI links</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>ARI Forwarding</td><td><span class="val val-enable">Enable</span></td><td>Alternative Routing-ID Interpretation  -  extends function numbering beyond 8 for SR-IOV/multi-function devices</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="test"><td>Re-Size BAR Support</td><td><span class="val val-test">Test</span></td><td>Resizable BAR  -  maps full GPU VRAM to CPU address space; game/driver dependent  -  benchmark both</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>PCI Delay Optimization</td><td><span class="val val-enable">Enable</span></td><td>Reduces firmware-inserted delays during PCIe enumeration</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Link Training Retry</td><td><span class="val val-disable">Disable</span></td><td>PCIe LTSSM retries on link training failure  -  or set to 2 for marginal links</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>DMA Enable</td><td><span class="val val-disable">Disable</span></td><td>All entries  -  PCIe DMA access control</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>ACS</td><td><span class="val val-disable">Disable</span></td><td>Access Control Services  -  peer-to-peer isolation between PCIe devices; needed for VFIO passthrough</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PTM</td><td><span class="val val-disable">Disable</span></td><td>Precision Time Measurement  -  hardware timestamping across PCIe hierarchy</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>DPC</td><td><span class="val val-disable">Disable</span></td><td>Downstream Port Containment  -  isolates errors by disabling downstream link</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>EDPC</td><td><span class="val val-disable">Disable</span></td><td>Enhanced DPC with software recovery support</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Snoop Latency Override</td><td><span class="val val-disable">Disable</span></td><td>All entries  -  overrides device-reported snoop latency tolerance</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Non Snoop Latency Override</td><td><span class="val val-disable">Disable</span></td><td>All entries  -  overrides non-snoop latency tolerance</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="1 ns"><td>Snoop Latency Multiplier (all)</td><td><span class="val val-set">0x0 (1 ns)</span></td><td>Sets snoop latency tolerance scale to minimum  -  tells PCH not to enter deep idle</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="valuezero"><td>Snoop Latency Value (all)</td><td><span class="val val-set">0x0</span></td><td>Snoop latency tolerance value  -  0 × 1ns = zero tolerance</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="1 ns"><td>Non Snoop Latency Multiplier (all)</td><td><span class="val val-set">0x0 (1 ns)</span></td><td>Same as snoop multiplier for non-coherent (non-snoop) transactions</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="valuezero"><td>Non Snoop Latency Value (all)</td><td><span class="val val-set">0x0</span></td><td>Non-snoop latency tolerance value  -  0 × 1ns = zero tolerance</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEP CPU</td><td><span class="val val-disable">Disable</span></td><td><a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/kernel/power-management" target="_blank" rel="noopener">Power Engine Plug-in</a>  -  per-device power management constraints for Modern Standby; disable all 31 entries</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>PEP Graphics</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>PEP IPU</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>PEP GNA</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>PEP SATA</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>PEP enumerated SATA ports</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>PEP PCIe Storage</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>PEP PCIe LAN</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>PEP PCIe WLAN</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="D0/F1"><td>PEP PCIe Storage</td><td><span class="val val-set">D0/F1</span></td><td>Set to D0/F1 - keeps PCIe storage in active power state</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="D0/F1"><td>PEP PCIe LAN</td><td><span class="val val-set">D0/F1</span></td><td>Set to D0/F1 - keeps PCIe LAN in active power state</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="D0/F1"><td>PEP PCIe WLAN</td><td><span class="val val-set">D0/F1</span></td><td>Set to D0/F1 - keeps PCIe WLAN in active power state</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>PEP PCIe GFX</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>PEP PCIe Other</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>PEP UART</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
@@ -642,16 +684,32 @@
       <tr data-action="disable"><td>PEP TCSS</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>PEP VMD</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>PEP EMMC</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>PME SCI</td><td><span class="val val-disable">Disable</span></td><td>Wake-up for PCIe</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Hot Plug</td><td><span class="val val-disable">Disable</span></td><td>All PCIe hot plug entries</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>BIOS Hot-Plug Support</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>SATA6G_1 Hot Plug</td><td><span class="val val-disable">Disable</span></td><td>Per-port SATA hot plug</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PME SCI</td><td><span class="val val-disable">Disable</span></td><td>Power Management Event  -  PCIe device asserts PME# to generate SCI wake interrupt</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-keywords="hot plug"><td>Hot Plug</td><td><span class="val val-disable">Disable</span></td><td>All PCIe hot-plug entries  -  disables runtime device insertion/removal detection</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>BIOS Hot-Plug Support</td><td><span class="val val-disable">Disable</span></td><td>Firmware-level hot-plug handling</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>SATA6G_1 Hot Plug</td><td><span class="val val-disable">Disable</span></td><td>Per-port SATA hot-plug detection  -  polls for device insertion</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>SATA6G_2 Hot Plug</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>SATA6G_3 Hot Plug</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>SATA6G_4 Hot Plug</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>M.2_3 Hot Plug</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Advanced Error Reporting</td><td><span class="val val-disable">Disable</span></td><td>All entries</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>SA GV</td><td><span class="val val-disable">Disable</span></td><td>System Agent voltage/clock dynamic adjustment</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-keywords="error reporting"><td>Advanced Error Reporting</td><td><span class="val val-disable">Disable</span></td><td>PCIe AER  -  extended error logging and correctable/uncorrectable error reporting</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>SA GV</td><td><span class="val val-disable">Disable</span></td><td>System Agent Geyserville - dynamically scales SA voltage and memory frequency; locks DRAM speed</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Relaxed Ordering</td><td><span class="val val-disable">Disable</span></td><td>PCIe TLP relaxed ordering - allows write reordering past reads; disable for stricter memory ordering</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>No Snoop</td><td><span class="val val-disable">Disable</span></td><td>PCIe No Snoop - skips CPU cache coherency check on TLPs; disable forces snoop for data consistency</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Hardware Autonomous Speed</td><td><span class="val val-disable">Disable</span></td><td>Allows PCIe hardware to autonomously change link speed - disable for fixed link rate</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PCH ASPM</td><td><span class="val val-disable">Disable</span></td><td>PCH-side Active State Power Management for PCIe slots</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEG ASPM</td><td><span class="val val-disable">Disable</span></td><td>PEG (CPU PCIe) Active State Power Management</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Platform Power Management</td><td><span class="val val-disable">Disable</span></td><td>Platform-level ASPM control - master toggle for PCH/PEG ASPM</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>DMA Control Guarantee</td><td><span class="val val-disable">Disable</span></td><td>DMA security control - restricts unauthorized memory access; disable may help older PCIe device compatibility</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-keywords="fer"><td>Fatal Error Reporting (FER)</td><td><span class="val val-disable">Disable</span></td><td>All entries - PCIe fatal error reporting to root complex; generates system error on fatal link/protocol failures</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-keywords="nfer"><td>Non-Fatal Error Reporting (NFER)</td><td><span class="val val-disable">Disable</span></td><td>All entries - PCIe non-fatal error reporting; logs recoverable TLP/flow control errors</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-keywords="cer"><td>Correctable Error Reporting (CER)</td><td><span class="val val-disable">Disable</span></td><td>All entries - PCIe correctable error reporting; logs replay timer/receiver errors handled by hardware</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-keywords="cto"><td>Completion Timeout (CTO)</td><td><span class="val val-disable">Disable</span></td><td>All entries - PCIe completion timeout; disabling removes the timer that fires when a request gets no response</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-keywords="sefe"><td>System Error on Fatal Error (SEFE)</td><td><span class="val val-disable">Disable</span></td><td>All entries - generates system error (NMI/SMI) when PCIe fatal error is reported</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-keywords="senfe"><td>System Error on Non-Fatal Error (SENFE)</td><td><span class="val val-disable">Disable</span></td><td>All entries - generates system error on PCIe non-fatal errors</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-keywords="urr"><td>Unsupported Request Reporting (URR)</td><td><span class="val val-disable">Disable</span></td><td>All entries - reports unsupported TLP requests as errors; generates advisory non-fatal on UR</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-keywords="multi-vc"><td>Multi-VC</td><td><span class="val val-disable">Disable</span></td><td>All entries - PCIe Multi Virtual Channel; extra traffic classes add arbitration overhead</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-keywords="lpm"><td>Link Power Management (LPM)</td><td><span class="val val-disable">Disable</span></td><td>All entries - USB/PCIe link power management; transitions links to lower power states when idle</td><td class="col-toggle toggle-cell"></td></tr>
     </tbody>
   </table>
   </div>
@@ -665,20 +723,20 @@
   <table class="ref-only">
     <thead><tr><th>Setting</th><th>Value</th><th>Notes</th><th class="col-toggle"></th></tr></thead>
     <tbody>
-      <tr data-action="disable"><td>XHCI Hand-off</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>XHCI Legacy Support</td><td><span class="val val-disable">Disable</span></td><td>Peripherals not detected on boot - re-enable to enter BIOS</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>XHCI Idle L1</td><td><span class="val val-disable">Disable</span></td><td>USB power saving</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>BTCG</td><td><span class="val val-disable">Disable</span></td><td>USB power saving - helps mouse polling significantly</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>USB2 PHY Sus Well Power Gating</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>USB Overcurrent</td><td><span class="val val-disable">Disable</span></td><td>Risky</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>USB Overcurrent Lock</td><td><span class="val val-disable">Disable</span></td><td>Risky</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>USB Single Port Control</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>USB Mass Storage Driver Support</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>USB S5 Wakeup Support</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>USB Provisioning of AMT</td><td><span class="val val-disable">Disable</span></td><td>Remote management</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>USB3 Type-C UFP2DFP Kernel/Platform Debug Support</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>USB DbC Enable Mode</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Type C Support</td><td><span class="val val-disable">Disable</span></td><td>If not using USB-C</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>XHCI Hand-off</td><td><span class="val val-disable">Disable</span></td><td>BIOS-to-OS XHCI controller ownership handoff  -  only needed for non-XHCI-aware OSes</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>XHCI Legacy Support</td><td><span class="val val-disable">Disable</span></td><td>USB keyboard/mouse emulation via SMI trap  -  adds interrupt overhead; ⚠️ peripherals won't work in BIOS/bootloader, re-enable to enter setup</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>XHCI Idle L1</td><td><span class="val val-disable">Disable</span></td><td>XHCI controller L1 link power state  -  saves power but adds USB resume latency</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>BTCG</td><td><span class="val val-disable">Disable</span></td><td>Trunk Clock Gating  -  gates XHCI clocks on idle; measurably impacts USB polling jitter for mice</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>USB2 PHY Sus Well Power Gating</td><td><span class="val val-disable">Disable</span></td><td>USB 2.0 PHY suspend-well power gating  -  cuts power to USB2 analog frontend in sleep</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>USB Overcurrent</td><td><span class="val val-disable">Disable</span></td><td>Disables OC# pin protection  -  ⚠️ removes hardware safeguard against excessive current draw</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>USB Overcurrent Lock</td><td><span class="val val-disable">Disable</span></td><td>Locks overcurrent configuration  -  ⚠️ same risk as above</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>USB Single Port Control</td><td><span class="val val-disable">Disable</span></td><td>Per-port enable/disable management</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>USB Mass Storage Driver Support</td><td><span class="val val-disable">Disable</span></td><td>Firmware USB mass storage driver  -  only needed for booting from USB drives</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>USB S5 Wakeup Support</td><td><span class="val val-disable">Disable</span></td><td>Allows USB device to wake system from soft-off (S5) state</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>USB Provisioning of AMT</td><td><span class="val val-disable">Disable</span></td><td>Intel AMT USB provisioning  -  remote management feature via <a href="https://www.intel.com/content/www/us/en/architecture-and-technology/intel-active-management-technology.html" target="_blank" rel="noopener">Intel AMT</a></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>USB3 Type-C UFP2DFP Kernel/Platform Debug Support</td><td><span class="val val-disable">Disable</span></td><td>Type-C debug mode for kernel/platform trace over USB  -  development only</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>USB DbC Enable Mode</td><td><span class="val val-disable">Disable</span></td><td>XHCI Debug Capability  -  enables USB debug port for kernel debugging</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Type C Support</td><td><span class="val val-disable">Disable</span></td><td>USB Type-C controller and PD negotiation  -  disable if no USB-C ports are used</td><td class="col-toggle toggle-cell"></td></tr>
     </tbody>
   </table>
   </div>
@@ -692,23 +750,23 @@
   <table class="ref-only">
     <thead><tr><th>Setting</th><th>Value</th><th>Notes</th><th class="col-toggle"></th></tr></thead>
     <tbody>
-      <tr data-action="disable"><td>Intel Platform Trust Technology (PTT)</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>TPM State</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Software Guard Extensions (SGX)</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>SW Guard Extension</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Intel Trusted Execution Technology (TXT)</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Total Memory Encryption</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>BME DMA Mitigation</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>PAVP Enable</td><td><span class="val val-disable">Disable</span></td><td>Protected Audio Video Path</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>AES</td><td><span class="val val-disable">Disable</span></td><td>Encryption acceleration (Intel AES-NI)</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>ASF Support</td><td><span class="val val-disable">Disable</span></td><td>Alert Standard Format</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Platform Hierarchy</td><td><span class="val val-disable">Disable</span></td><td>TPM 2.0 related</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Storage Hierarchy</td><td><span class="val val-disable">Disable</span></td><td>TPM 2.0 related</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Endorsement Hierarchy</td><td><span class="val val-disable">Disable</span></td><td>TPM 2.0 related</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Secure Boot</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>BIOS Interface Lock</td><td><span class="val val-disable">Disable</span></td><td>Experimental</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="enable"><td>Overclocking Lock</td><td><span class="val val-enable">Enable</span></td><td>Locks OC settings - enable after tuning</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="enable"><td>CFG Lock</td><td><span class="val val-enable">Enable</span></td><td>Disables CPU PM subsystem - blocks ThrottleStop changes</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Intel Platform Trust Technology (PTT)</td><td><span class="val val-disable">Disable</span></td><td>Firmware TPM - emulates TPM 2.0 in Intel ME</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>TPM State</td><td><span class="val val-disable">Disable</span></td><td>Discrete/firmware TPM module enable</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Software Guard Extensions (SGX)</td><td><span class="val val-disable">Disable</span></td><td>SGX enclaves  -  reserves memory for encrypted enclaves; deprecated on 12th Gen+</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>SW Guard Extension</td><td><span class="val val-disable">Disable</span></td><td>Alternate SGX entry</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Intel Trusted Execution Technology (TXT)</td><td><span class="val val-disable">Disable</span></td><td>Hardware root of trust  -  measured launch of hypervisors; requires TPM</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Total Memory Encryption</td><td><span class="val val-disable">Disable</span></td><td>TME  -  encrypts all DRAM via AES-XTS in the memory controller; adds latency</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>BME DMA Mitigation</td><td><span class="val val-disable">Disable</span></td><td>Clears Bus Master Enable on PCIe devices during boot to block DMA attacks</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PAVP Enable</td><td><span class="val val-disable">Disable</span></td><td>Protected Audio Video Path  -  DRM pipeline through iGPU for premium content playback</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>AES</td><td><span class="val val-disable">Disable</span></td><td>Intel AES-NI  -  hardware AES acceleration; ⚠️ disabling slows disk encryption, TLS, etc.</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>ASF Support</td><td><span class="val val-disable">Disable</span></td><td>Alert Standard Format  -  DASH/ASF remote monitoring via NIC firmware</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Platform Hierarchy</td><td><span class="val val-disable">Disable</span></td><td>TPM 2.0 platform hierarchy  -  firmware-owned key tree</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Storage Hierarchy</td><td><span class="val val-disable">Disable</span></td><td>TPM 2.0 storage hierarchy  -  owner-controlled persistent objects</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Endorsement Hierarchy</td><td><span class="val val-disable">Disable</span></td><td>TPM 2.0 endorsement hierarchy  -  manufacturer-provisioned identity keys</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Secure Boot</td><td><span class="val val-disable">Disable</span></td><td>UEFI Secure Boot - verifies bootloader/driver signatures</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>BIOS Interface Lock</td><td><span class="val val-disable">Disable</span></td><td>Locks BIOS_CNTL register  -  prevents runtime SPI flash writes; experimental</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>Overclocking Lock</td><td><span class="val val-enable">Enable</span></td><td>Locks MSR 0x194 OC mailbox  -  enable after OC tuning is finalized to prevent drift</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>CFG Lock</td><td><span class="val val-enable">Enable</span></td><td>Locks MSR 0xE2 (PKG_CST_CONFIG_CONTROL)  -  prevents OS/tools from changing CPU PM config</td><td class="col-toggle toggle-cell"></td></tr>
     </tbody>
   </table>
   </div>
@@ -722,52 +780,52 @@
   <table class="ref-only">
     <thead><tr><th>Setting</th><th>Value</th><th>Notes</th><th class="col-toggle"></th></tr></thead>
     <tbody>
-      <tr data-action="disable"><td>Internal Graphics</td><td><span class="val val-disable">Disable</span></td><td>If not using iGPU</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>IGD Multi-Monitor</td><td><span class="val val-disable">Disable</span></td><td>If not using iGPU</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Gfx Low Power Mode</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>RC6(Render Standby)</td><td><span class="val val-disable">Disable</span></td><td>iGPU power saving</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>RC6+ (Deep RC6)</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Wi-Fi Controller</td><td><span class="val val-disable">Disable</span></td><td>If not using Wi-Fi</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Wi-Fi Core</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>CNVI MODE</td><td><span class="val val-disable">Disable</span></td><td>Wi-Fi and Bluetooth related</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Onboard CNVi Module Control</td><td><span class="val val-disable">Disable</span></td><td>If not using Wi-Fi/BT</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Bluetooth Controller</td><td><span class="val val-disable">Disable</span></td><td>If not using BT</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Discrete Bluetooth Interface</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Connectivity mode (Wi-Fi &amp; Bluetooth)</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>WWAN Device</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>WWAN</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>WWAN Reset Workaround</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>WiFi SAR</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>WiFi Dynamic SAR</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Bluetooth SAR</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>LAN Boot</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>LAN Wake From DeepSx</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Wake on LAN Enable</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Foxville I225 Wake on LAN Support</td><td><span class="val val-disable">Disable</span></td><td>Intel I225-V NIC</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Wake on WLAN and BT Enable</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>DeepSx Wake on WLAN and BT Enable</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Wake On WiGig</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Wake System from S5</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Azalia</td><td><span class="val val-disable">Disable</span></td><td>Realtek Audio Controller - if using USB audio only</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Azalia PME</td><td><span class="val val-disable">Disable</span></td><td>Audio controller power saving</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Azalia Docking Support</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>CPU SA Audio Device</td><td><span class="val val-disable">Disable</span></td><td>HDMI audio pass-through - doesn't disable Realtek</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Discrete Thunderbolt Support</td><td><span class="val val-disable">Disable</span></td><td>If not using TB</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>PCIE Tunneling over USB4</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>TBT RTD3 Enable</td><td><span class="val val-disable">Disable</span></td><td>Thunderbolt power saving</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Titan Ridge Workaround</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Windows 10 Thunderbolt Support</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>SMART Self Test</td><td><span class="val val-disable">Disable</span></td><td>SATA health check</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Aggressive LPM Support</td><td><span class="val val-disable">Disable</span></td><td>SATA power saving</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>SATA Device Sleep</td><td><span class="val val-disable">Disable</span></td><td>All entries</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>PUIS Enable</td><td><span class="val val-disable">Disable</span></td><td>Power-up in Standby for SATA</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>ZPODD</td><td><span class="val val-disable">Disable</span></td><td>Optical drive power saving</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="set" data-target="Max Performance"><td>Acoustic Mode</td><td><span class="val val-set">Max Performance</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>GNA Device</td><td><span class="val val-disable">Disable</span></td><td>Gaussian Neural Accelerator - AI</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>IPU Device (B0:D5:F0)</td><td><span class="val val-disable">Disable</span></td><td>Image Processing Unit - AI</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>CHAP Device</td><td><span class="val val-disable">Disable</span></td><td>Debug bus - ring/IA/SA</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Thermal Device</td><td><span class="val val-disable">Disable</span></td><td>PCH thermal reporting intermediary</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>IOAPIC 24-119 Entries</td><td><span class="val val-disable">Disable</span></td><td>Not needed if devices are in MSI mode</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Internal Graphics</td><td><span class="val val-disable">Disable</span></td><td>Intel UHD/Iris iGPU  -  frees SA resources; disable if using dedicated GPU only</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>IGD Multi-Monitor</td><td><span class="val val-disable">Disable</span></td><td>iGPU multi-display output  -  disable if iGPU is off</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Gfx Low Power Mode</td><td><span class="val val-disable">Disable</span></td><td>iGPU low-power idle mode</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>RC6(Render Standby)</td><td><span class="val val-disable">Disable</span></td><td>iGPU render standby  -  gates GPU execution units when idle</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>RC6+ (Deep RC6)</td><td><span class="val val-disable">Disable</span></td><td>Deeper iGPU power state beyond RC6</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Wi-Fi Controller</td><td><span class="val val-disable">Disable</span></td><td>PCH-integrated or discrete Wi-Fi  -  disable if using ethernet only</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Wi-Fi Core</td><td><span class="val val-disable">Disable</span></td><td>Wi-Fi radio core power</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CNVI MODE</td><td><span class="val val-disable">Disable</span></td><td>Connectivity Integration  -  PCH-side Wi-Fi/BT MAC shared with CNVi module</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Onboard CNVi Module Control</td><td><span class="val val-disable">Disable</span></td><td>CNVi companion RF module  -  disable if not using onboard Wi-Fi/BT</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Bluetooth Controller</td><td><span class="val val-disable">Disable</span></td><td>Bluetooth radio  -  disable if not using BT peripherals</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Discrete Bluetooth Interface</td><td><span class="val val-disable">Disable</span></td><td>Standalone BT controller (non-CNVi)</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Connectivity mode (Wi-Fi &amp; Bluetooth)</td><td><span class="val val-disable">Disable</span></td><td>Combined Wi-Fi + BT radio toggle</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>WWAN Device</td><td><span class="val val-disable">Disable</span></td><td>Cellular modem (4G/5G)  -  laptop/embedded only</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>WWAN</td><td><span class="val val-disable">Disable</span></td><td>Alternate WWAN entry</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>WWAN Reset Workaround</td><td><span class="val val-disable">Disable</span></td><td>Modem reset timing fix</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>WiFi SAR</td><td><span class="val val-disable">Disable</span></td><td>Specific Absorption Rate  -  limits RF transmit power for regulatory compliance</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>WiFi Dynamic SAR</td><td><span class="val val-disable">Disable</span></td><td>Dynamic SAR  -  adjusts Wi-Fi power based on sensor proximity detection</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Bluetooth SAR</td><td><span class="val val-disable">Disable</span></td><td>SAR for Bluetooth radio</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>LAN Boot</td><td><span class="val val-disable">Disable</span></td><td>PXE network boot via onboard NIC</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>LAN Wake From DeepSx</td><td><span class="val val-disable">Disable</span></td><td>Wake-on-LAN from DeepSx (near-zero-power) sleep state</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-keywords="wake on lan"><td>Wake on LAN Enable</td><td><span class="val val-disable">Disable</span></td><td>WoL  -  NIC listens for magic packet while system sleeps</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Foxville I225 Wake on LAN Support</td><td><span class="val val-disable">Disable</span></td><td>WoL for Intel I225-V 2.5GbE NIC specifically</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Wake on WLAN and BT Enable</td><td><span class="val val-disable">Disable</span></td><td>Wake from sleep via Wi-Fi or Bluetooth activity</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>DeepSx Wake on WLAN and BT Enable</td><td><span class="val val-disable">Disable</span></td><td>Same as above from DeepSx state</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Wake On WiGig</td><td><span class="val val-disable">Disable</span></td><td>Wake via 60 GHz WiGig (802.11ad)  -  rare on desktops</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Wake System from S5</td><td><span class="val val-disable">Disable</span></td><td>Any wake source from soft-off state</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Azalia</td><td><span class="val val-disable">Disable</span></td><td>Intel HDA (Azalia) codec  -  the Realtek onboard audio controller; disable if using USB DAC only</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Azalia PME</td><td><span class="val val-disable">Disable</span></td><td>HDA controller Power Management Event  -  wake-from-audio-activity</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Azalia Docking Support</td><td><span class="val val-disable">Disable</span></td><td>Audio codec hot-plug for docking stations</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CPU SA Audio Device</td><td><span class="val val-disable">Disable</span></td><td>System Agent HDMI/DP audio  -  iGPU display audio passthrough; does not affect Realtek</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Discrete Thunderbolt Support</td><td><span class="val val-disable">Disable</span></td><td>Thunderbolt controller (JHL7540/Titan Ridge/Maple Ridge)  -  disable if not using TB</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PCIE Tunneling over USB4</td><td><span class="val val-disable">Disable</span></td><td>PCIe protocol tunneling via USB4/Thunderbolt 4 fabric</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>TBT RTD3 Enable</td><td><span class="val val-disable">Disable</span></td><td>Thunderbolt Runtime D3  -  controller enters D3 when no devices attached</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Titan Ridge Workaround</td><td><span class="val val-disable">Disable</span></td><td>JHL7540 Titan Ridge silicon errata workaround</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Windows 10 Thunderbolt Support</td><td><span class="val val-disable">Disable</span></td><td>Legacy W10 TB driver support  -  force-connect mode</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>SMART Self Test</td><td><span class="val val-disable">Disable</span></td><td>SATA SMART health check during POST  -  adds boot time</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Aggressive LPM Support</td><td><span class="val val-disable">Disable</span></td><td>AHCI Aggressive Link Power Management  -  SATA PHY partial/slumber transitions</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>SATA Device Sleep</td><td><span class="val val-disable">Disable</span></td><td>All entries  -  DevSleep signal to SATA devices for near-zero-power idle</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PUIS Enable</td><td><span class="val val-disable">Disable</span></td><td>Power-Up In Standby  -  drive stays spun down until host commands spin-up</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>ZPODD</td><td><span class="val val-disable">Disable</span></td><td>Zero-Power Optical Disc Drive  -  powers off ODD when no disc present</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Max Performance"><td>Acoustic Mode</td><td><span class="val val-set">Max Performance</span></td><td>SATA Acoustic Management  -  Max Performance disables seek noise reduction</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>GNA Device</td><td><span class="val val-disable">Disable</span></td><td>Gaussian &amp; Neural Accelerator  -  low-power inference coprocessor (speech/noise); unused by most workloads</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>IPU Device (B0:D5:F0)</td><td><span class="val val-disable">Disable</span></td><td>Image Processing Unit  -  camera ISP for laptop webcams; not used on desktops</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CHAP Device</td><td><span class="val val-disable">Disable</span></td><td>Crashlog/debug bus  -  exposes Ring, IA, SA internal debug interface</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Thermal Device</td><td><span class="val val-disable">Disable</span></td><td>PCH thermal subsystem device  -  intermediary for DPTF/DTT thermal policy</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>IOAPIC 24-119 Entries</td><td><span class="val val-disable">Disable</span></td><td>Extended <a href="https://pdos.csail.mit.edu/6.828/2016/readings/ia32/ioapic.pdf" target="_blank" rel="noopener">IOAPIC</a> redirection entries 24-119  -  unused when all devices are in MSI/MSI-X mode</td><td class="col-toggle toggle-cell"></td></tr>
     </tbody>
   </table>
   </div>
@@ -781,35 +839,35 @@
   <table class="ref-only">
     <thead><tr><th>Setting</th><th>Value</th><th>Notes</th><th class="col-toggle"></th></tr></thead>
     <tbody>
-      <tr data-action="disable"><td>CrashLog Feature</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Cpu CrashLog (Device 10)</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>CrashLog On All Reset</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>CrashLog PMC Rearm</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>CrashLog PMC Clear</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>CrashLog Cdie Rearm</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>CrashLog Cdie Clear</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>CrashLog GPRs</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>PMC Debug Message Enable</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>PCH Trace Hub Enable Mode</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>CPU Trace Hub Enable Mode</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Trace Hub</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Processor Trace OutPut Scheme</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>SMM Processor Trace</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Probeless Trace</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Memory Trace</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Training Tracing</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Debug Interface</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Platform Debug Consent</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>ACPI Debug</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>WDT Enable</td><td><span class="val val-disable">Disable</span></td><td>Watchdog timer - recovery after BSOD</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>ICC/OC Watchdog Timer</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Three Strike Counter</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>PET Progress</td><td><span class="val val-disable">Disable</span></td><td>Platform Event Trap</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>ASF Sensors Table</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>CPU Wakeup Timer</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>EC CS Debug Light</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Ptid Support</td><td><span class="val val-disable">Disable</span></td><td>Temperature/voltage monitoring device</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>PECI</td><td><span class="val val-disable">Disable</span></td><td>Thermal monitoring tool</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-keywords="crashlog"><td>CrashLog Feature</td><td><span class="val val-disable">Disable</span></td><td>Intel CrashLog  -  saves CPU/PMC state to SRAM on fatal error for post-mortem analysis</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Cpu CrashLog (Device 10)</td><td><span class="val val-disable">Disable</span></td><td>CPU die crashlog PCI device  -  exposes MMIO region for crashlog data</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CrashLog On All Reset</td><td><span class="val val-disable">Disable</span></td><td>Capture crashlog on every reset, not just unexpected ones</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CrashLog PMC Rearm</td><td><span class="val val-disable">Disable</span></td><td>Re-arm PMC crashlog trigger after collection</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CrashLog PMC Clear</td><td><span class="val val-disable">Disable</span></td><td>Clear PMC crashlog SRAM on boot</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CrashLog Cdie Rearm</td><td><span class="val val-disable">Disable</span></td><td>Re-arm compute die crashlog trigger</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CrashLog Cdie Clear</td><td><span class="val val-disable">Disable</span></td><td>Clear compute die crashlog buffer</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CrashLog GPRs</td><td><span class="val val-disable">Disable</span></td><td>Include general-purpose register dump in crashlog</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PMC Debug Message Enable</td><td><span class="val val-disable">Disable</span></td><td>Power Management Controller debug output over trace bus</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PCH Trace Hub Enable Mode</td><td><span class="val val-disable">Disable</span></td><td>PCH-side Intel Trace Hub  -  aggregates debug traces from PCH IPs</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CPU Trace Hub Enable Mode</td><td><span class="val val-disable">Disable</span></td><td>CPU-side Trace Hub  -  captures core/uncore trace data</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Trace Hub</td><td><span class="val val-disable">Disable</span></td><td>Master Trace Hub toggle</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Processor Trace OutPut Scheme</td><td><span class="val val-disable">Disable</span></td><td>Intel PT output routing  -  ToPA (Table of Physical Addresses) or single range</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>SMM Processor Trace</td><td><span class="val val-disable">Disable</span></td><td>Intel PT recording inside System Management Mode  -  captures SMI handler execution</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Probeless Trace</td><td><span class="val val-disable">Disable</span></td><td>JTAG-less debug trace via memory buffer</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Memory Trace</td><td><span class="val val-disable">Disable</span></td><td>Memory controller transaction tracing</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Training Tracing</td><td><span class="val val-disable">Disable</span></td><td>MRC memory training step trace  -  logs each training phase for debug</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Debug Interface</td><td><span class="val val-disable">Disable</span></td><td>CPU debug interface enable (DCI/JTAG)  -  silicon debug access</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Platform Debug Consent</td><td><span class="val val-disable">Disable</span></td><td>Grants debug probe access to platform  -  must be disabled in production</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>ACPI Debug</td><td><span class="val val-disable">Disable</span></td><td>ACPI debug object output  -  firmware debug prints via ACPI _DBG method</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>WDT Enable</td><td><span class="val val-disable">Disable</span></td><td>PCH watchdog timer  -  resets system if firmware/OS hangs past timeout</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>ICC/OC Watchdog Timer</td><td><span class="val val-disable">Disable</span></td><td>Integrated Clock Controller watchdog  -  resets on OC hang</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Three Strike Counter</td><td><span class="val val-disable">Disable</span></td><td>BIOS recovery after 3 consecutive failed boots  -  resets to defaults</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PET Progress</td><td><span class="val val-disable">Disable</span></td><td>Platform Event Trap  -  sends ASF boot progress alerts to remote management console</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>ASF Sensors Table</td><td><span class="val val-disable">Disable</span></td><td>Alert Standard Format sensor descriptor table for remote monitoring</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CPU Wakeup Timer</td><td><span class="val val-disable">Disable</span></td><td>Periodic timer to wake CPU from idle  -  unnecessary overhead</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>EC CS Debug Light</td><td><span class="val val-disable">Disable</span></td><td>Embedded Controller connected-standby debug LED</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Ptid Support</td><td><span class="val val-disable">Disable</span></td><td>Platform Temperature/ID device  -  exposes thermal zones and voltage rails to DPTF</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PECI</td><td><span class="val val-disable">Disable</span></td><td>Platform Environment Control Interface  -  serial bus for CPU thermal reads by BMC/EC</td><td class="col-toggle toggle-cell"></td></tr>
     </tbody>
   </table>
   </div>
@@ -823,44 +881,45 @@
   <table class="ref-only">
     <thead><tr><th>Setting</th><th>Value</th><th>Notes</th><th class="col-toggle"></th></tr></thead>
     <tbody>
-      <tr data-action="disable"><td>ME State</td><td><span class="val val-disable">Disable</span></td><td>Puts ME in Temporarily Disabled Mode</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="enable"><td>HECI Message check Disable</td><td><span class="val val-enable">Enable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="enable"><td>D0I3 Setting for HECI Disable</td><td><span class="val val-enable">Enable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Mrc Fast Boot</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Fast Boot</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="set" data-target="Disabled"><td>Option ROM Messages</td><td><span class="val val-set">Disabled / Keep Current</span></td><td>Hides device info at boot</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Ipv4 PXE Support</td><td><span class="val val-disable">Disable</span></td><td>Network boot</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Ipv6 PXE Support</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Network Stack</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Network Stack Driver Support</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="enable"><td>Legacy Mode</td><td><span class="val val-enable">Enable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="set" data-target="Upon Request"><td>GateA20 Active</td><td><span class="val val-set">Upon Request</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Legacy Game Compatibility Mode</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Port 60/64 Emulation</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Port 61h Bit-4 Emulation</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Above 4G Decoding</td><td><span class="val val-disable">Disable</span></td><td>Memory mapped I/O for 64-bit PCIe - disable unless needed</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="set" data-target="Continuous"><td>Serial IRQ Mode</td><td><span class="val val-set">Continuous</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="set" data-target="Normal Boot"><td>Next Boot after AC Power Loss</td><td><span class="val val-set">Normal Boot</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="set" data-target="Off"><td>Bootup NumLock State</td><td><span class="val val-set">Off</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Enable FFU Support</td><td><span class="val val-disable">Disable</span></td><td>Full Flash Update</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Intel Rapid Recovery Technology</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Intel(R) Optane(TM) Memory</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>ACPI D3Cold Support</td><td><span class="val val-disable">Disable</span></td><td>Device power saving</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Enable VTIO Support</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Control Iommu Pre-boot Behavior</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>SR-IOV Support</td><td><span class="val val-disable">Disable</span></td><td>Virtualization</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Enable TCO Timer</td><td><span class="val val-disable">Disable</span></td><td>Watchdog related</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>HDCP Support</td><td><span class="val val-disable">Disable</span></td><td>Can fix monitor lag</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Enable 8254 Clock Gate</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="enable"><td>HPET</td><td><span class="val val-enable">Enable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>Duty Cycle Correction Training</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="enable"><td>Extreme Over-Voltage</td><td><span class="val val-enable">Enable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>VRM Spread Spectrum</td><td><span class="val val-disable">Disable</span></td><td>Better OC stability</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>BCLK Spread Spectrum</td><td><span class="val val-disable">Disable</span></td><td>Better OC stability</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>FIVR Spread Spectrum</td><td><span class="val val-disable">Disable</span></td><td>Better OC stability</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="enable"><td>MSI enabled</td><td><span class="val val-enable">Enable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="enable"><td>Enhanced Turbo</td><td><span class="val val-enable">Enable</span></td><td>Useless on static OC but allows all-core turbo</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>ASUS MultiCore Enhancement</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>ME State</td><td><span class="val val-disable">Disable</span></td><td>Intel Management Engine  -  sets ME to Temporarily Disabled Mode; reduces background ME activity</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>HECI Message check Disable</td><td><span class="val val-enable">Enable</span></td><td>Suppresses HECI (Host-Embedded Controller Interface) message polling  -  reduces ME communication overhead</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>D0I3 Setting for HECI Disable</td><td><span class="val val-enable">Enable</span></td><td>Puts HECI device into D0i3 low-power state when ME is disabled</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Mrc Fast Boot</td><td><span class="val val-disable">Disable</span></td><td>MRC Fast Boot  -  skips memory retraining on warm boot; disable for full training every boot (more stable timings)</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Fast Boot</td><td><span class="val val-disable">Disable</span></td><td>Skip POST device init  -  faster boot but may miss hardware changes</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Disabled"><td>Option ROM Messages</td><td><span class="val val-set">Disabled / Keep Current</span></td><td>Hides PCI Option ROM banners (RAID, NIC) during POST</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Ipv4 PXE Support</td><td><span class="val val-disable">Disable</span></td><td>IPv4 PXE network boot  -  loads boot image from TFTP server over LAN</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Ipv6 PXE Support</td><td><span class="val val-disable">Disable</span></td><td>IPv6 PXE network boot</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Network Stack</td><td><span class="val val-disable">Disable</span></td><td>UEFI network stack  -  TCP/IP firmware driver for PXE/HTTP boot</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Network Stack Driver Support</td><td><span class="val val-disable">Disable</span></td><td>Network stack DXE drivers loaded during firmware init</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>Legacy Mode</td><td><span class="val val-enable">Enable</span></td><td>CSM/Legacy BIOS compatibility  -  enables legacy OpROM and INT13h boot</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Upon Request"><td>GateA20 Active</td><td><span class="val val-set">Upon Request</span></td><td>A20 gate  -  "Upon Request" activates only when needed instead of always-on</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Legacy Game Compatibility Mode</td><td><span class="val val-disable">Disable</span></td><td>Legacy game port (201h) I/O emulation</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Port 60/64 Emulation</td><td><span class="val val-disable">Disable</span></td><td>PS/2 keyboard controller I/O port emulation via SMI  -  adds interrupt overhead</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Port 61h Bit-4 Emulation</td><td><span class="val val-disable">Disable</span></td><td>System timer 2 (PC speaker) bit emulation  -  legacy compatibility</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Above 4G Decoding</td><td><span class="val val-disable">Disable</span></td><td>64-bit MMIO for PCIe BARs above 4 GiB  -  needed for Resizable BAR; disable otherwise</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Continuous"><td>Serial IRQ Mode</td><td><span class="val val-set">Continuous</span></td><td>LPC SERIRQ mode  -  Continuous drives SERIRQ every frame (lower latency vs. Quiet)</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Normal Boot"><td>Next Boot after AC Power Loss</td><td><span class="val val-set">Normal Boot</span></td><td>Behavior after AC restoration  -  Normal Boot starts OS as usual</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Off"><td>Bootup NumLock State</td><td><span class="val val-set">Off</span></td><td>NumLock LED state at POST</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Enable FFU Support</td><td><span class="val val-disable">Disable</span></td><td>Full Flash Update  -  Windows-based BIOS flash update mechanism</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Intel Rapid Recovery Technology</td><td><span class="val val-disable">Disable</span></td><td>RAID mirror recovery feature in RST driver</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Intel(R) Optane(TM) Memory</td><td><span class="val val-disable">Disable</span></td><td>Optane/3D XPoint caching tier  -  discontinued; leaves RST overhead if enabled</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>ACPI D3Cold Support</td><td><span class="val val-disable">Disable</span></td><td>D3cold  -  completely removes power from device; adds re-initialization latency on resume</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Enable VTIO Support</td><td><span class="val val-disable">Disable</span></td><td>Virtio paravirtual device support in firmware  -  for VMs</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Control Iommu Pre-boot Behavior</td><td><span class="val val-disable">Disable</span></td><td>IOMMU (VT-d) DMA remapping during firmware phase</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>SR-IOV Support</td><td><span class="val val-disable">Disable</span></td><td>Single Root I/O Virtualization  -  splits one PCIe device into virtual functions for VMs</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Enable TCO Timer</td><td><span class="val val-disable">Disable</span></td><td>PCH TCO (Total Cost of Ownership) watchdog  -  resets system on OS hang</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>HDCP Support</td><td><span class="val val-disable">Disable</span></td><td>High-bandwidth Digital Content Protection  -  DRM handshake adds display latency on some monitors</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Enable 8254 Clock Gate</td><td><span class="val val-disable">Disable</span></td><td>Gates legacy 8254 PIT clock when unused  -  disable keeps PIT always ticking (stable legacy timer)</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>HPET</td><td><span class="val val-enable">Enable</span></td><td>High Precision Event Timer  -  exposes HPET MMIO device; Windows may still bypass it for TSC</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Duty Cycle Correction Training</td><td><span class="val val-disable">Disable</span></td><td>DCC  -  MRC trains DRAM clock duty cycle balance; disabling skips this step</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>Extreme Over-Voltage</td><td><span class="val val-enable">Enable</span></td><td>Unlocks extended voltage ranges for OC  -  ⚠️ can damage CPU if abused</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>VRM Spread Spectrum</td><td><span class="val val-disable">Disable</span></td><td>Modulates VRM switching frequency for EMI  -  introduces voltage ripple; disable for OC stability</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>BCLK Spread Spectrum</td><td><span class="val val-disable">Disable</span></td><td>Modulates base clock ±0.5%  -  interferes with OC; disable for stable BCLK</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="0.5"><td>RFI Spread Spectrum</td><td><span class="val val-set">0.5%</span></td><td>Radio Frequency Interference mitigation  -  modulates refclock for <a href="https://www.ecfr.gov/current/title-47/chapter-I/subchapter-A/part-15" target="_blank" rel="noopener">FCC Part 15</a>/CISPR EMI compliance; 0.5% is minimum effective value</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>FIVR Spread Spectrum</td><td><span class="val val-disable">Disable</span></td><td>Fully Integrated Voltage Regulator SSC  -  modulates on-die VR frequency; disable for cleaner supply</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>MSI enabled</td><td><span class="val val-enable">Enable</span></td><td>Message Signaled Interrupts  -  bypasses IOAPIC; lower latency and per-vector CPU targeting</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>Enhanced Turbo</td><td><span class="val val-enable">Enable</span></td><td>Allows all-core turbo at single-core ratio  -  redundant with static OC but useful on stock/adaptive</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>ASUS MultiCore Enhancement</td><td><span class="val val-disable">Disable</span></td><td>ASUS MCE  -  overrides Intel turbo power limits; prefer manual PL1/PL2 tuning</td><td class="col-toggle toggle-cell"></td></tr>
     </tbody>
   </table>
   </div>
@@ -874,10 +933,10 @@
   <table class="ref-only">
     <thead><tr><th>Setting</th><th>Value</th><th>Notes</th><th class="col-toggle"></th></tr></thead>
     <tbody>
-      <tr data-action="enable"><td>Legacy IO Low Latency</td><td><span class="val val-enable">Enable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>PCH Cross Throttling</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="enable"><td>Disable DSX ACPRESENT PullDown</td><td><span class="val val-enable">Enable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable"><td>All DeepSx Power Policies</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>Legacy IO Low Latency</td><td><span class="val val-enable">Enable</span></td><td>Removes firmware-inserted delays on legacy I/O port access (61h, etc.)</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PCH Cross Throttling</td><td><span class="val val-disable">Disable</span></td><td>PCH thermal cross-throttling  -  throttles CPU/GPU when PCH overheats</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>Disable DSX ACPRESENT PullDown</td><td><span class="val val-enable">Enable</span></td><td>Prevents DeepSx entry via AC_PRESENT pull-down  -  keeps platform in higher power state</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-keywords="deepsx"><td>All DeepSx Power Policies</td><td><span class="val val-disable">Disable</span></td><td>DeepSx  -  near-zero-power sleep states (S4/S5 variants); adds wake latency</td><td class="col-toggle toggle-cell"></td></tr>
     </tbody>
   </table>
   </div>
@@ -891,12 +950,26 @@
   <table class="ref-only">
     <thead><tr><th>Setting</th><th>Value</th><th>Notes</th><th class="col-toggle"></th></tr></thead>
     <tbody>
-      <tr data-action="test"><td>Memory Scrambler</td><td><span class="val val-test">Disable</span></td><td>Can cause issues - test carefully</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="test"><td>Ch Hash Support</td><td><span class="val val-test">Test</span></td><td>Checksums and data integrity</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="test"><td>Memory Scrambler</td><td><span class="val val-test">Disable</span></td><td>XORs DRAM data with pseudo-random pattern to balance bit-line charge  -  disabling may reduce latency but risks signal integrity on some boards</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="test"><td>Ch Hash Support</td><td><span class="val val-test">Test</span></td><td>Channel hash interleaving  -  distributes memory accesses across channels via address hashing; effect depends on access pattern</td><td class="col-toggle toggle-cell"></td></tr>
     </tbody>
   </table>
   </div>
 </section>
+
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-modal">
+    <div class="confirm-header">Confirm Changes <span id="confirmCount"></span></div>
+    <div class="confirm-body"><table>
+      <thead><tr><th style="width:40%">Setting</th><th style="width:12%">Action</th><th style="width:24%">Old</th><th style="width:24%">New</th></tr></thead>
+      <tbody id="confirmBody"></tbody>
+    </table></div>
+    <div class="confirm-footer">
+      <button class="btn" id="btnConfirmCancel">Cancel</button>
+      <button class="btn btn-primary" id="btnConfirmApply">Confirm &amp; Download</button>
+    </div>
+  </div>
+</div>
 
 <footer></footer>
 
@@ -918,7 +991,8 @@ function buildSettingsDB() {
     const name = tr.querySelector('td:first-child').textContent.trim();
     const action = tr.dataset.action;
     const target = tr.dataset.target || '';
-    db.push({ name, action, target, section, row: tr, enabled: true });
+    const keywords = tr.dataset.keywords || '';
+    db.push({ name, action, target, section, row: tr, enabled: false, keywords });
   });
   return db;
 }
@@ -930,7 +1004,7 @@ function initToggles() {
     if (!cell) return;
     const cb = document.createElement('input');
     cb.type = 'checkbox';
-    cb.checked = true;
+    cb.checked = false;
     cb.className = 'row-toggle';
     cb.addEventListener('change', () => {
       const entry = settingsDB.find(s => s.row === tr);
@@ -948,13 +1022,14 @@ function buildSectionToggles() {
   sections.forEach(sec => {
     const count = settingsDB.filter(s => s.section === sec).length;
     const btn = document.createElement('button');
-    btn.className = 'section-toggle active';
+    btn.className = 'section-toggle';
     btn.dataset.section = sec;
     btn.innerHTML = `${SECTION_LABELS[sec] || sec} <span class="ct">${count}</span>`;
     btn.addEventListener('click', () => {
       btn.classList.toggle('active');
       const on = btn.classList.contains('active');
       settingsDB.filter(s => s.section === sec).forEach(s => {
+        if (on && s.row.hasAttribute('data-no-preset')) return;
         s.enabled = on;
         const cb = s.row.querySelector('.row-toggle');
         if (cb) cb.checked = on;
@@ -973,7 +1048,7 @@ function updateSelectedCount() {
 updateSelectedCount();
 
 document.getElementById('btnSelectAll').addEventListener('click', () => {
-  settingsDB.forEach(s => { s.enabled = true; const cb = s.row.querySelector('.row-toggle'); if (cb) cb.checked = true; });
+  settingsDB.forEach(s => { if (s.row.hasAttribute('data-no-preset')) return; s.enabled = true; const cb = s.row.querySelector('.row-toggle'); if (cb) cb.checked = true; });
   document.querySelectorAll('.section-toggle').forEach(b => b.classList.add('active'));
   updateSelectedCount();
 });
@@ -1014,23 +1089,43 @@ function parseNVRAM(text) {
 function applySettings(parsed, enabledSettings) {
   const lines = [...parsed.lines];
   let changed = 0;
+  const changes = [];
   const nameMap = new Map();
+  const kwSettings = [];
   enabledSettings.forEach(s => {
     const key = s.name.toLowerCase().trim();
     if (!nameMap.has(key)) nameMap.set(key, []);
     nameMap.get(key).push(s);
+    if (s.keywords) kwSettings.push(s);
   });
 
   for (const block of parsed.blocks) {
     const key = block.name.toLowerCase().trim();
-    const settings = nameMap.get(key);
-    if (!settings || settings.length === 0) continue;
+    let settings = nameMap.get(key);
+    let via = '';
+
+    if (!settings || settings.length === 0) {
+      for (const ks of kwSettings) {
+        const kws = ks.keywords.split(',').map(k => k.trim().toLowerCase());
+        if (kws.every(k => key.includes(k))) {
+          settings = [ks]; via = ks.name; break;
+        }
+      }
+      if (!settings) continue;
+    }
     const setting = settings[0];
 
     if (block.type === 'options') {
       const action = setting.action;
       const target = setting.target;
       if (action === 'test') continue;
+      let oldVal = '';
+      for (let j = block.optStart; j <= block.optEnd; j++) {
+        if (/\*/.test(lines[j])) {
+          const m = lines[j].match(/\]\s*(.+)$/);
+          if (m) oldVal = m[1].trim();
+        }
+      }
       for (let j = block.optStart; j <= block.optEnd; j++) {
         let l = lines[j];
         if (/^\s*(Options\s*=\s*)\*/.test(l)) {
@@ -1052,30 +1147,37 @@ function applySettings(parsed, enabledSettings) {
           } else if (/^(\s+)(\[.+)/.test(lines[j])) {
             lines[j] = lines[j].replace(/^(\s+)(\[)/, '$1*$2');
           }
+          const nm = lines[j].match(/\]\s*(.+)$/);
           found = true; changed++;
+          changes.push({ name: block.name, action, old: oldVal, new: nm ? nm[1].trim() : action, via });
         }
       }
     } else if (block.type === 'value') {
       const action = setting.action;
       const line = lines[block.valIdx];
+      const mB = line.match(/Value\s*=\s*<(\d+)>/);
+      const mP = line.match(/Value\s*=\s*(\d+)/);
+      const oldVal = mB ? mB[1] : (mP ? mP[1] : '?');
+      let newVal = '';
       if (action === 'valuezero' || action === 'disable') {
         const m1 = line.match(/^(Value\s*=\s*)<(\d+)>(.*)$/);
-        if (m1) { lines[block.valIdx] = m1[1] + '<0>' + m1[3]; changed++; }
+        if (m1) { lines[block.valIdx] = m1[1] + '<0>' + m1[3]; newVal = '0'; changed++; }
         else {
           const m2 = line.match(/^(Value\s*=\s*)(\d+)(.*)$/);
-          if (m2) { lines[block.valIdx] = m2[1] + '0' + m2[3]; changed++; }
+          if (m2) { lines[block.valIdx] = m2[1] + '0' + m2[3]; newVal = '0'; changed++; }
         }
       } else if (action === 'enable') {
         const m1 = line.match(/^(Value\s*=\s*)<(\d+)>(.*)$/);
-        if (m1) { lines[block.valIdx] = m1[1] + '<1>' + m1[3]; changed++; }
+        if (m1) { lines[block.valIdx] = m1[1] + '<1>' + m1[3]; newVal = '1'; changed++; }
         else {
           const m2 = line.match(/^(Value\s*=\s*)(\d+)(.*)$/);
-          if (m2) { lines[block.valIdx] = m2[1] + '1' + m2[3]; changed++; }
+          if (m2) { lines[block.valIdx] = m2[1] + '1' + m2[3]; newVal = '1'; changed++; }
         }
       }
+      if (newVal) changes.push({ name: block.name, action, old: oldVal, new: newVal, via });
     }
   }
-  return { lines, changed };
+  return { lines, changed, changes };
 }
 
 // ---- FILE HANDLING ----
@@ -1102,9 +1204,15 @@ function handleFile(file) {
 
     document.getElementById('fileName').textContent = file.name;
     const totalQ = parsed.blocks.length;
+    const exactNames = new Set(parsed.blocks.map(b => b.name.toLowerCase().trim()));
     const matchable = settingsDB.filter(s => {
       const key = s.name.toLowerCase().trim();
-      return parsed.blocks.some(b => b.name.toLowerCase().trim() === key);
+      if (exactNames.has(key)) return true;
+      if (s.keywords) {
+        const kws = s.keywords.split(',').map(k => k.trim().toLowerCase());
+        return parsed.blocks.some(b => kws.every(k => b.name.toLowerCase().trim().includes(k)));
+      }
+      return false;
     }).length;
     document.getElementById('fileStats').textContent =
       `${totalQ} Setup Questions found - ${matchable} match reference settings`;
@@ -1121,25 +1229,70 @@ function handleFile(file) {
 let downloadsAPI = null;
 (async () => { try { downloadsAPI = await claude.use('downloads'); } catch(e) {} })();
 
-document.getElementById('btnApply').addEventListener('click', async () => {
-  if (!fileLoaded || !nvramOriginal) return;
-  const parsed = parseNVRAM(nvramOriginal);
-  const enabled = settingsDB.filter(s => s.enabled);
-  const result = applySettings(parsed, enabled);
-  nvramLines = { lines: result.lines, blocks: parsed.blocks };
+let pendingResult = null;
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
+document.getElementById('btnApply').addEventListener('click', () => {
+  if (!fileLoaded || !nvramOriginal) return;
+  const enabled = settingsDB.filter(s => s.enabled);
+  if (enabled.length === 0) {
+    document.getElementById('applyResult').textContent = 'No settings selected';
+    return;
+  }
+  const parsed = parseNVRAM(nvramOriginal);
+  const result = applySettings(parsed, enabled);
+  if (result.changes.length === 0) {
+    document.getElementById('applyResult').textContent = 'No matching settings found in nvram file';
+    return;
+  }
+  const realChanges = result.changes.filter(c => c.old !== c.new);
+  if (realChanges.length === 0) {
+    document.getElementById('applyResult').textContent = 'All matched settings already have the target values';
+    return;
+  }
+  result.changes = realChanges;
+  pendingResult = result;
+  const tbody = document.getElementById('confirmBody');
+  tbody.innerHTML = '';
+  realChanges.forEach(c => {
+    const tr = document.createElement('tr');
+    const badge = c.via ? `<span class="match-kw">keyword: ${esc(c.via)}</span>` : '';
+    tr.innerHTML = `<td>${esc(c.name)}${badge}</td><td>${esc(c.action)}</td><td>${esc(c.old)}</td><td>${esc(c.new)}</td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('confirmCount').textContent = `- ${realChanges.length} changes`;
+  document.getElementById('confirmOverlay').classList.add('visible');
+});
+
+document.getElementById('confirmOverlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) { pendingResult = null; e.currentTarget.classList.remove('visible'); }
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && pendingResult) {
+    pendingResult = null;
+    document.getElementById('confirmOverlay').classList.remove('visible');
+  }
+});
+document.getElementById('btnConfirmCancel').addEventListener('click', () => {
+  pendingResult = null;
+  document.getElementById('confirmOverlay').classList.remove('visible');
+});
+document.getElementById('btnConfirmApply').addEventListener('click', async () => {
+  if (!pendingResult) return;
+  const result = pendingResult;
+  pendingResult = null;
+  document.getElementById('confirmOverlay').classList.remove('visible');
+  nvramLines = { lines: result.lines, blocks: parseNVRAM(nvramOriginal).blocks };
   const blob = new Blob([result.lines.join('\r\n')], { type: 'text/plain' });
   if (downloadsAPI) {
-    try {
-      await downloadsAPI.save({ filename: 'nvram.txt', data: blob });
-    } catch (e) {
-      document.getElementById('applyResult').textContent = 'Download declined or unavailable';
-      return;
-    }
+    try { await downloadsAPI.save({ filename: 'nvram.txt', data: blob }); }
+    catch (e) { document.getElementById('applyResult').textContent = 'Download declined or unavailable'; return; }
+  } else {
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = 'nvram.txt'; a.click(); URL.revokeObjectURL(a.href);
   }
-
   document.getElementById('applyResult').textContent =
-    `Applied ${result.changed} changes across ${enabled.length} enabled settings`;
+    `Applied ${result.changed} changes across ${result.changes.length} settings`;
 });
 
 document.getElementById('btnReset').addEventListener('click', () => {
