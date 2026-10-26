@@ -700,14 +700,14 @@
       <tr data-action="disable"><td>PEG ASPM</td><td><span class="val val-disable">Disable</span></td><td>PEG (CPU PCIe) Active State Power Management</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>Platform Power Management</td><td><span class="val val-disable">Disable</span></td><td>Platform-level ASPM control - master toggle for PCH/PEG ASPM</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>DMA Control Guarantee</td><td><span class="val val-disable">Disable</span></td><td>DMA security control - restricts unauthorized memory access; disable may help older PCIe device compatibility</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable" data-keywords="fer"><td>Fatal Error Reporting (FER)</td><td><span class="val val-disable">Disable</span></td><td>All entries - PCIe fatal error reporting to root complex; generates system error on fatal link/protocol failures</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable" data-keywords="nfer"><td>Non-Fatal Error Reporting (NFER)</td><td><span class="val val-disable">Disable</span></td><td>All entries - PCIe non-fatal error reporting; logs recoverable TLP/flow control errors</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable" data-keywords="cer"><td>Correctable Error Reporting (CER)</td><td><span class="val val-disable">Disable</span></td><td>All entries - PCIe correctable error reporting; logs replay timer/receiver errors handled by hardware</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable" data-keywords="cto"><td>Completion Timeout (CTO)</td><td><span class="val val-disable">Disable</span></td><td>All entries - PCIe completion timeout; disabling removes the timer that fires when a request gets no response</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable" data-keywords="sefe"><td>System Error on Fatal Error (SEFE)</td><td><span class="val val-disable">Disable</span></td><td>All entries - generates system error (NMI/SMI) when PCIe fatal error is reported</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable" data-keywords="senfe"><td>System Error on Non-Fatal Error (SENFE)</td><td><span class="val val-disable">Disable</span></td><td>All entries - generates system error on PCIe non-fatal errors</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable" data-keywords="urr"><td>Unsupported Request Reporting (URR)</td><td><span class="val val-disable">Disable</span></td><td>All entries - reports unsupported TLP requests as errors; generates advisory non-fatal on UR</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="disable" data-keywords="multi-vc"><td>Multi-VC</td><td><span class="val val-disable">Disable</span></td><td>All entries - PCIe Multi Virtual Channel; extra traffic classes add arbitration overhead</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-keywords="FER"><td>Fatal Error Reporting (FER)</td><td><span class="val val-disable">Disable</span></td><td>All entries - PCIe fatal error reporting to root complex; generates system error on fatal link/protocol failures</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-keywords="NFER"><td>Non-Fatal Error Reporting (NFER)</td><td><span class="val val-disable">Disable</span></td><td>All entries - PCIe non-fatal error reporting; logs recoverable TLP/flow control errors</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-keywords="CER"><td>Correctable Error Reporting (CER)</td><td><span class="val val-disable">Disable</span></td><td>All entries - PCIe correctable error reporting; logs replay timer/receiver errors handled by hardware</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-keywords="CTO"><td>Completion Timeout (CTO)</td><td><span class="val val-disable">Disable</span></td><td>All entries - PCIe completion timeout; disabling removes the timer that fires when a request gets no response</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-keywords="SEFE"><td>System Error on Fatal Error (SEFE)</td><td><span class="val val-disable">Disable</span></td><td>All entries - generates system error (NMI/SMI) when PCIe fatal error is reported</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-keywords="SENFE"><td>System Error on Non-Fatal Error (SENFE)</td><td><span class="val val-disable">Disable</span></td><td>All entries - generates system error on PCIe non-fatal errors</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-keywords="URR"><td>Unsupported Request Reporting (URR)</td><td><span class="val val-disable">Disable</span></td><td>All entries - reports unsupported TLP requests as errors; generates advisory non-fatal on UR</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable" data-keywords="Multi-VC"><td>Multi-VC</td><td><span class="val val-disable">Disable</span></td><td>All entries - PCIe Multi Virtual Channel; extra traffic classes add arbitration overhead</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable" data-keywords="lpm"><td>Link Power Management (LPM)</td><td><span class="val val-disable">Disable</span></td><td>All entries - USB/PCIe link power management; transitions links to lower power states when idle</td><td class="col-toggle toggle-cell"></td></tr>
     </tbody>
   </table>
@@ -1085,6 +1085,14 @@ function parseNVRAM(text) {
   return { lines, blocks };
 }
 
+function kwMatch(keywords, name) {
+  const kws = keywords.split(',').map(k => k.trim());
+  return kws.every(k => {
+    if (k !== k.toLowerCase()) return name.includes(k);
+    return name.toLowerCase().includes(k);
+  });
+}
+
 function applySettings(parsed, enabledSettings) {
   const lines = [...parsed.lines];
   let changed = 0;
@@ -1105,8 +1113,7 @@ function applySettings(parsed, enabledSettings) {
 
     if (!settings || settings.length === 0) {
       for (const ks of kwSettings) {
-        const kws = ks.keywords.split(',').map(k => k.trim().toLowerCase());
-        if (kws.every(k => key.includes(k))) {
+        if (kwMatch(ks.keywords, block.name.trim())) {
           settings = [ks]; via = ks.name; break;
         }
       }
@@ -1208,8 +1215,7 @@ function handleFile(file) {
       const key = s.name.toLowerCase().trim();
       if (exactNames.has(key)) return true;
       if (s.keywords) {
-        const kws = s.keywords.split(',').map(k => k.trim().toLowerCase());
-        return parsed.blocks.some(b => kws.every(k => b.name.toLowerCase().trim().includes(k)));
+        return parsed.blocks.some(b => kwMatch(s.keywords, b.name.trim()));
       }
       return false;
     }).length;
