@@ -1,0 +1,1199 @@
+<title>Intel SCEWIN Configurator</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+  /* Dense BIOS tool - monospace accent, amber warnings, surgical feel */
+  :root {
+    --bg: #fafaf9;
+    --fg: #1c1917;
+    --fg-muted: #78716c;
+    --fg-dim: #a8a29e;
+    --surface: #ffffff;
+    --surface-alt: #f5f5f4;
+    --border: #e7e5e4;
+    --border-strong: #d6d3d1;
+    --accent: #b45309;
+    --accent-bg: #fffbeb;
+    --accent-hover: #92400e;
+    --tag-disable: #dc2626;
+    --tag-enable: #16a34a;
+    --tag-set: #2563eb;
+    --tag-test: #9333ea;
+    --tag-disable-bg: #fef2f2;
+    --tag-enable-bg: #f0fdf4;
+    --tag-set-bg: #eff6ff;
+    --tag-test-bg: #faf5ff;
+    --drop-border: #b45309;
+    --drop-bg: #fffbeb;
+    --success: #16a34a;
+    --success-bg: #f0fdf4;
+    --font-body: 'Inter', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0c0a09; --fg: #e7e5e4; --fg-muted: #a8a29e; --fg-dim: #57534e;
+      --surface: #1c1917; --surface-alt: #1c1917; --border: #292524; --border-strong: #44403c;
+      --accent: #f59e0b; --accent-bg: #1c1408; --accent-hover: #fbbf24;
+      --tag-disable: #f87171; --tag-enable: #4ade80; --tag-set: #60a5fa; --tag-test: #c084fc;
+      --tag-disable-bg: #1a0a0a; --tag-enable-bg: #0a1a0f; --tag-set-bg: #0a1020; --tag-test-bg: #140a20;
+      --drop-border: #f59e0b; --drop-bg: #1c1408;
+      --success: #4ade80; --success-bg: #0a1a0f;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0c0a09; --fg: #e7e5e4; --fg-muted: #a8a29e; --fg-dim: #57534e;
+    --surface: #1c1917; --surface-alt: #1c1917; --border: #292524; --border-strong: #44403c;
+    --accent: #f59e0b; --accent-bg: #1c1408; --accent-hover: #fbbf24;
+    --tag-disable: #f87171; --tag-enable: #4ade80; --tag-set: #60a5fa; --tag-test: #c084fc;
+    --tag-disable-bg: #1a0a0a; --tag-enable-bg: #0a1a0f; --tag-set-bg: #0a1020; --tag-test-bg: #140a20;
+    --drop-border: #f59e0b; --drop-bg: #1c1408;
+    --success: #4ade80; --success-bg: #0a1a0f;
+    color-scheme: dark;
+  }
+  body {
+    background: var(--bg); color: var(--fg);
+    font-family: var(--font-body); font-size: 14px; line-height: 1.5;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 0;
+    max-width: 1000px; margin: 0 auto;
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0 0 auto;
+    height: env(safe-area-inset-top, 0px); z-index: 10;
+    background: var(--bg);
+  }
+  * { box-sizing: border-box; }
+
+  header {
+    padding: 2rem 0 1rem;
+    border-bottom: 2px solid var(--accent);
+    margin-bottom: 1.5rem;
+  }
+  header h1 {
+    font-family: var(--font-mono); font-size: 1.4rem; font-weight: 700;
+    margin: 0 0 0.25rem; letter-spacing: -0.02em;
+  }
+  header p { margin: 0; color: var(--fg-muted); font-size: 0.82rem; }
+
+  .warn {
+    background: var(--accent-bg); border: 1px solid var(--accent);
+    border-radius: 6px; padding: 0.75rem 1rem; margin-bottom: 1.5rem;
+    font-size: 0.82rem; line-height: 1.55;
+  }
+  .warn strong { color: var(--accent); }
+
+  /* ---- Drop zone ---- */
+  .drop-zone {
+    border: 2px dashed var(--border-strong);
+    border-radius: 8px; padding: 2rem 1rem;
+    text-align: center; cursor: pointer;
+    transition: all 0.2s; margin-bottom: 1.5rem;
+    background: var(--surface);
+  }
+  .drop-zone:hover, .drop-zone.drag-over {
+    border-color: var(--drop-border);
+    background: var(--drop-bg);
+  }
+  .drop-zone .icon {
+    width: 32px; height: 32px; margin: 0 auto 0.5rem; opacity: 0.45;
+  }
+  .drop-zone .icon svg { display: block; width: 100%; height: 100%; }
+  .drop-zone .label {
+    font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600;
+    color: var(--fg);
+  }
+  .drop-zone .hint {
+    font-size: 0.75rem; color: var(--fg-muted); margin-top: 0.25rem;
+  }
+  .drop-zone input[type="file"] { display: none; }
+
+  /* ---- File status bar ---- */
+  .file-status {
+    display: none; background: var(--success-bg); border: 1px solid var(--success);
+    border-radius: 6px; padding: 0.6rem 1rem; margin-bottom: 1rem;
+    font-size: 0.82rem; gap: 0.75rem;
+    align-items: center; flex-wrap: wrap;
+  }
+  .file-status.visible { display: flex; }
+  .file-status .fname {
+    font-family: var(--font-mono); font-weight: 600; color: var(--success);
+  }
+  .file-status .stats { color: var(--fg-muted); font-variant-numeric: tabular-nums; }
+
+  /* ---- Apply toolbar ---- */
+  .apply-toolbar {
+    display: none; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;
+    flex-direction: column; gap: 0.75rem;
+  }
+  .apply-toolbar.visible { display: flex; }
+  .apply-toolbar h3 {
+    font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600;
+    margin: 0; display: flex; align-items: center; gap: 0.5rem;
+  }
+  .apply-toolbar h3 .count {
+    font-weight: 400; color: var(--fg-muted); font-size: 0.78rem;
+  }
+  .section-toggles {
+    display: flex; flex-wrap: wrap; gap: 0.4rem;
+  }
+  .section-toggle {
+    display: flex; align-items: center; gap: 0.35rem;
+    padding: 0.3rem 0.6rem; border: 1px solid var(--border);
+    border-radius: 999px; background: var(--surface); color: var(--fg-muted);
+    font-size: 0.72rem; font-weight: 500; cursor: pointer;
+    font-family: var(--font-body); transition: all 0.15s;
+    user-select: none;
+  }
+  .section-toggle:hover { border-color: var(--accent); color: var(--fg); }
+  .section-toggle.active {
+    background: var(--accent); color: #fff; border-color: var(--accent);
+  }
+  .section-toggle .ct {
+    font-variant-numeric: tabular-nums; opacity: 0.7;
+  }
+  .action-row {
+    display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;
+  }
+  .btn {
+    padding: 0.45rem 1rem; border: 1px solid var(--border);
+    border-radius: 6px; background: var(--surface); color: var(--fg);
+    font-family: var(--font-body); font-size: 0.82rem; font-weight: 600;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-primary {
+    background: var(--accent); color: #fff; border-color: var(--accent);
+  }
+  .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); color: #fff; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn:disabled:hover { border-color: var(--border); color: var(--fg); }
+  .btn-primary:disabled:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .apply-result {
+    font-size: 0.78rem; color: var(--fg-muted); font-variant-numeric: tabular-nums;
+  }
+
+  /* ---- Controls bar ---- */
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 0.5rem;
+    margin-bottom: 1.25rem; position: sticky;
+    top: env(safe-area-inset-top, 0px); z-index: 5;
+    background: var(--bg); padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .controls input[type="search"] {
+    flex: 1 1 200px; min-width: 0;
+    padding: 0.5rem 0.75rem; border: 1px solid var(--border);
+    border-radius: 6px; background: var(--surface); color: var(--fg);
+    font-family: var(--font-body); font-size: 0.85rem; outline: none;
+  }
+  .controls input[type="search"]:focus { border-color: var(--accent); }
+  .filter-btn {
+    padding: 0.35rem 0.7rem; border: 1px solid var(--border);
+    border-radius: 999px; background: var(--surface); color: var(--fg-muted);
+    font-size: 0.75rem; font-weight: 500; cursor: pointer;
+    font-family: var(--font-body); transition: all 0.15s;
+  }
+  .filter-btn:hover, .filter-btn:focus-visible { border-color: var(--accent); color: var(--fg); }
+  .filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* ---- Sections ---- */
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem;
+    font-size: 0.75rem; color: var(--fg-muted);
+  }
+  .legend span { display: flex; align-items: center; gap: 0.3rem; }
+
+  nav.toc { margin-bottom: 2rem; }
+  nav.toc h2 {
+    font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--fg-muted); margin: 0 0 0.5rem;
+  }
+  .toc-grid { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .toc-grid a {
+    font-size: 0.78rem; color: var(--accent); text-decoration: none;
+    padding: 0.2rem 0.5rem; border: 1px solid var(--border); border-radius: 4px;
+    font-family: var(--font-mono); font-weight: 500; white-space: nowrap;
+  }
+  .toc-grid a:hover { background: var(--accent-bg); border-color: var(--accent); }
+
+  section { margin-bottom: 2rem; }
+  section h2 {
+    font-family: var(--font-mono); font-size: 1rem; font-weight: 600;
+    margin: 0 0 0.15rem; padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+    scroll-margin-top: calc(env(safe-area-inset-top, 0px) + 60px);
+  }
+  section > .cat-desc {
+    font-size: 0.78rem; color: var(--fg-muted); margin: 0 0 0.75rem;
+  }
+
+  /* ---- Tables ---- */
+  .overflow-x { overflow-x: auto; }
+  table {
+    width: 100%; border-collapse: collapse; font-size: 0.82rem;
+    table-layout: fixed;
+  }
+  th {
+    text-align: left; font-size: 0.68rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--fg-muted); padding: 0.4rem 0.5rem;
+    border-bottom: 2px solid var(--border); background: var(--bg);
+  }
+  /* 4-column layout when configurator active, 3-column for reference only */
+  th:nth-child(1) { width: 38%; }
+  th:nth-child(2) { width: 18%; }
+  th:nth-child(3) { width: 34%; }
+  th:nth-child(4) { width: 10%; }
+  .ref-only th:nth-child(1) { width: 44%; }
+  .ref-only th:nth-child(2) { width: 20%; }
+  .ref-only th:nth-child(3) { width: 36%; }
+  td {
+    padding: 0.45rem 0.5rem; border-bottom: 1px solid var(--border);
+    vertical-align: top; overflow-wrap: break-word; word-wrap: break-word;
+  }
+  tr.hidden-row { display: none; }
+  td:first-child {
+    font-family: var(--font-mono); font-weight: 500; font-size: 0.8rem;
+  }
+  td:nth-child(2) { overflow: hidden; text-overflow: ellipsis; }
+  .val {
+    display: inline-block; font-family: var(--font-mono); font-size: 0.72rem;
+    font-weight: 600; padding: 0.1rem 0.4rem; border-radius: 3px;
+    white-space: nowrap; max-width: 100%;
+    overflow: hidden; text-overflow: ellipsis;
+  }
+  .val-disable { color: var(--tag-disable); background: var(--tag-disable-bg); }
+  .val-enable { color: var(--tag-enable); background: var(--tag-enable-bg); }
+  .val-set { color: var(--tag-set); background: var(--tag-set-bg); }
+  .val-test { color: var(--tag-test); background: var(--tag-test-bg); }
+  td:last-child { color: var(--fg-muted); font-size: 0.78rem; }
+  .count-badge {
+    font-size: 0.7rem; font-variant-numeric: tabular-nums;
+    color: var(--fg-muted); font-weight: 400;
+  }
+
+  /* ---- Toggle checkboxes in rows ---- */
+  .row-toggle {
+    width: 16px; height: 16px; accent-color: var(--accent);
+    cursor: pointer; margin: 0;
+  }
+  td.toggle-cell { text-align: center; vertical-align: middle; }
+  .col-toggle { display: none; }
+  .configurator-active .col-toggle { display: table-cell; }
+
+  footer {
+    padding: 1.5rem 0; border-top: 1px solid var(--border);
+    font-size: 0.72rem; color: var(--fg-muted); text-align: center;
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+
+  @media (max-width: 600px) {
+    header h1 { font-size: 1.15rem; }
+    th:nth-child(1) { width: 36%; }
+    th:nth-child(2) { width: 20%; }
+    th:nth-child(3) { width: 30%; }
+    th:nth-child(4) { width: 14%; }
+    .ref-only th:nth-child(1) { width: 40%; }
+    .ref-only th:nth-child(2) { width: 22%; }
+    .ref-only th:nth-child(3) { width: 38%; }
+    td:first-child { word-break: break-word; }
+    .drop-zone { padding: 1.25rem 0.75rem; }
+  }
+</style>
+
+<header>
+  <h1>Intel SCEWIN Configurator</h1>
+  <p>AMI UEFI hidden BIOS settings - reference and auto-configurator for nvram.txt</p>
+</header>
+
+<div class="warn">
+  <strong>Warning:</strong> These settings disable power management, security mitigations, and error reporting. Thermals will increase. Ensure adequate cooling. Know how to reset CMOS on your board before starting.
+</div>
+
+<!-- Drop zone -->
+<div class="drop-zone" id="dropZone">
+  <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v14m0 0l-5-5m5 5l5-5"/><line x1="5" y1="21" x2="19" y2="21"/></svg></div>
+  <div class="label">Drop nvram.txt here</div>
+  <div class="hint">or click to browse - AMISCE export file</div>
+  <input type="file" id="fileInput" accept=".txt">
+</div>
+
+<!-- File status -->
+<div class="file-status" id="fileStatus">
+  <span class="fname" id="fileName"></span>
+  <span class="stats" id="fileStats"></span>
+</div>
+
+<!-- Apply toolbar -->
+<div class="apply-toolbar" id="applyToolbar">
+  <h3>Configure Sections <span class="count" id="selectedCount"></span></h3>
+  <div class="section-toggles" id="sectionToggles"></div>
+  <div class="action-row">
+    <button class="btn" id="btnSelectAll">Select All</button>
+    <button class="btn" id="btnDeselectAll">Deselect All</button>
+    <button class="btn btn-primary" id="btnApply">Apply Selected</button>
+    <button class="btn" id="btnReset">Reset to Original</button>
+    <span class="apply-result" id="applyResult"></span>
+  </div>
+</div>
+
+<div class="legend">
+  <span><span class="val val-disable">Disable</span> Turn off</span>
+  <span><span class="val val-enable">Enable</span> Turn on</span>
+  <span><span class="val val-set">Value</span> Set to specific</span>
+  <span><span class="val val-test">Test</span> Board-dependent</span>
+</div>
+
+<div class="controls">
+  <input type="search" id="search" placeholder="Filter settings..." autocomplete="off">
+  <button class="filter-btn active" data-filter="all">All</button>
+  <button class="filter-btn" data-filter="disable">Disable</button>
+  <button class="filter-btn" data-filter="enable">Enable</button>
+  <button class="filter-btn" data-filter="set">Set value</button>
+  <button class="filter-btn" data-filter="test">Test</button>
+</div>
+
+<nav class="toc">
+  <h2>Sections</h2>
+  <div class="toc-grid">
+    <a href="#cstates">C-States</a>
+    <a href="#power">Power Mgmt</a>
+    <a href="#cpu">CPU</a>
+    <a href="#memory">Memory</a>
+    <a href="#pcie">PCIe / DMI</a>
+    <a href="#usb">USB</a>
+    <a href="#security">Security</a>
+    <a href="#peripherals">Peripherals</a>
+    <a href="#debug">Debug / Logging</a>
+    <a href="#boot">Boot / Misc</a>
+    <a href="#perf">Performance Tuning</a>
+    <a href="#experimental">Experimental</a>
+  </div>
+</nav>
+
+<!-- ==================== C-STATES ==================== -->
+<section id="cstates" data-section="cstates">
+  <h2>C-States <span class="count-badge"></span></h2>
+  <p class="cat-desc">Processor idle states - disabling removes frequency/voltage transitions during idle</p>
+  <div class="overflow-x">
+  <table class="ref-only">
+    <thead><tr><th>Setting</th><th>Value</th><th>Notes</th><th class="col-toggle"></th></tr></thead>
+    <tbody>
+      <tr data-action="disable"><td>Intel C-State</td><td><span class="val val-disable">Disable</span></td><td>Master C-state toggle</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>C-States Control</td><td><span class="val val-disable">Disable</span></td><td>Alternative master toggle on some boards</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CPU C States Support</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Package C States Support</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>C1E Support</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CPU C3 Report</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CPU C6 Report</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CPU C7 Report</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CPU C7</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CPU C8 Report</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CPU C9 Report</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CPU C10 Report</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>C6DRAM</td><td><span class="val val-disable">Disable</span></td><td>Moves DRAM contents to PRM in C6</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Enhanced C-states</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>C-state Pre-Wake</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>C-State Auto Demotion</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>C-State Un-demotion</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Package C-State Demotion</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Package C-State Un-demotion</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="C0/C1"><td>Package C State Limit</td><td><span class="val val-set">C0/C1</span></td><td>Shallowest allowed package state</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Run-time C7 Allowed</td><td><span class="val val-disable">Disable</span></td><td>iGPU related</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>MonitorMWait</td><td><span class="val val-disable">Disable</span></td><td>Related to C-states; can prevent boot on some boards</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>MWAIT Redirection</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>S0ix Auto Demotion</td><td><span class="val val-disable">Disable</span></td><td>Modern standby auto demotion</td><td class="col-toggle toggle-cell"></td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ==================== POWER MANAGEMENT ==================== -->
+<section id="power" data-section="power">
+  <h2>Power Management <span class="count-badge"></span></h2>
+  <p class="cat-desc">Frequency scaling, voltage optimization, thermal throttling, sleep states</p>
+  <div class="overflow-x">
+  <table class="ref-only">
+    <thead><tr><th>Setting</th><th>Value</th><th>Notes</th><th class="col-toggle"></th></tr></thead>
+    <tbody>
+      <tr data-action="disable"><td>EIST / CPU EIST Function</td><td><span class="val val-disable">Disable</span></td><td>Enhanced Intel SpeedStep - frequency scaling</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>SpeedStep</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Intel Speed Shift Technology</td><td><span class="val val-disable">Disable</span></td><td>Keep ENABLED on W11 23H2+ with E-cores - required for Thread Director</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Intel Speed Shift Tech Interrupt Control</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Intel Adaptive Boost Technology</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Race To Halt (RTH)</td><td><span class="val val-disable">Disable</span></td><td>Rushes to idle for power savings</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Voltage Optimization</td><td><span class="val val-disable">Disable</span></td><td>Static voltage is better for latency</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>TVB Voltage Optimizations</td><td><span class="val val-disable">Disable</span></td><td>Voltage optimization during turbo</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>TVB Ratio Clipping</td><td><span class="val val-disable">Disable</span></td><td>Downclocks frequency on high temp</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>BCLK Aware Adaptive Voltage</td><td><span class="val val-disable">Disable</span></td><td>Interferes with static OC</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Dual Tau Boost</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>RSR</td><td><span class="val val-disable">Disable</span></td><td>Lowers clock on high voltage/temp</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Energy Efficient P-state</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Energy Efficient Turbo</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Energy Performance Gain</td><td><span class="val val-disable">Disable</span></td><td>Affects RAM latency</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>P-state Capping</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Bi-Directional PROCHOT</td><td><span class="val val-disable">Disable</span></td><td>Reduces frequency on high temps</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>Disable PROCHOT# Output</td><td><span class="val val-enable">Enable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PROCHOT Response</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PROCHOT Lock</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Intel Adaptive Thermal Monitor</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Thermal Monitor</td><td><span class="val val-disable">Disable</span></td><td>Only if you are NOT overheating</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Manual"><td>Thermal Throttling Level</td><td><span class="val val-set">Manual</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="valuezero"><td>T0 / T1 / T2 Level</td><td><span class="val val-set">0</span></td><td>All three</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="valuezero"><td>TCC Activation Offset</td><td><span class="val val-set">0</span></td><td>Higher = lower throttle temp</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Vmax Stress</td><td><span class="val val-disable">Disable</span></td><td>Frequency throttling at max voltage</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>HDC Control</td><td><span class="val val-disable">Disable</span></td><td>Hardware Duty Cycling</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>ACPI T-States</td><td><span class="val val-disable">Disable</span></td><td>Throttle states / set to 0</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>DPTF</td><td><span class="val val-disable">Disable</span></td><td>Dynamic Platform Thermal Framework</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Ring to Core offset (Down Bin)</td><td><span class="val val-disable">Disable</span></td><td>Helps with OC</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Ring Down Bin</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Platform PL1 Enable</td><td><span class="val val-disable">Disable</span></td><td>Power limit 1</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Platform PL2 Enable</td><td><span class="val val-disable">Disable</span></td><td>Power limit 2</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CS PL1 Limit</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>TDC Enable</td><td><span class="val val-disable">Disable</span></td><td>Thermal Design Current limit</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Cdynmax Clamping Enable</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Acoustic Noise Mitigation</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Power Loss Notification Feature</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Enable Hibernation</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Suspend Disabled"><td>ACPI Sleep State / Standby State</td><td><span class="val val-set">Suspend Disabled</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Low Power S0 Idle Capability</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Modern StandBy</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>SLP_S0# Override</td><td><span class="val val-enable">Enable</span></td><td>Test</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>ErP Ready</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>Power Off Energy Saving</td><td><span class="val val-enable">Enable</span></td><td>Keep on so connected devices don't draw power in S5</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Power Loading</td><td><span class="val val-disable">Disable</span></td><td>Small load on PSU at idle - unnecessary</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PCH Energy Reporting</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>Disable Energy Reporting</td><td><span class="val val-enable">Enable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>EC Low Power Mode</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>EC Notification</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Sensor Standby</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>LakeTiny Feature</td><td><span class="val val-disable">Disable</span></td><td>Battery power saver - laptops</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>DeepSx Power Policies</td><td><span class="val val-disable">Disable</span></td><td>All entries - deep sleep states</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Power Off"><td>Restore AC Power Loss</td><td><span class="val val-set">Power Off</span></td><td>Behavior after power outage</td><td class="col-toggle toggle-cell"></td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ==================== CPU ==================== -->
+<section id="cpu" data-section="cpu">
+  <h2>CPU <span class="count-badge"></span></h2>
+  <p class="cat-desc">Core behavior, prefetch, virtualization, interrupt handling</p>
+  <div class="overflow-x">
+  <table class="ref-only">
+    <thead><tr><th>Setting</th><th>Value</th><th>Notes</th><th class="col-toggle"></th></tr></thead>
+    <tbody>
+      <tr data-action="disable"><td>Hyper-Threading</td><td><span class="val val-disable">Disable</span></td><td>If 6+ cores; keep on if CPU-bound at 99%</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Hardware Prefetcher</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Adjacent Cache Line Prefetch</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="RUN Loop"><td>AP Threads Idle Manner</td><td><span class="val val-set">RUN Loop</span></td><td>Better smoothness/mouse feel (Intel only)</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Turbo Performance"><td>Boot Performance Mode</td><td><span class="val val-set">Turbo Performance</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Fixed Priority"><td>Interrupt Redirection Mode Selection</td><td><span class="val val-set">Fixed Priority</span></td><td>IOAPIC delivery mode - minimal impact with MSI enabled; Fixed avoids TPR arbitration, Round Robin may not actually rotate on modern Intel</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Manual"><td>Stop Grant Configuration</td><td><span class="val val-set">Manual</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>Limit CPUID Maximum</td><td><span class="val val-enable">Enable</span></td><td>Legacy OS compat - sends less info to OS</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Intel (VMX) Virtualization Technology</td><td><span class="val val-disable">Disable</span></td><td>Re-enable if you need VMs</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>VT-d</td><td><span class="val val-disable">Disable</span></td><td>I/O virtualization</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Execute Disable Bit</td><td><span class="val val-disable">Disable</span></td><td>Security feature - NX bit</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>MachineCheck</td><td><span class="val val-disable">Disable</span></td><td>Can prevent boot - hardware error detection</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Machine Check</td><td><span class="val val-disable">Disable</span></td><td>Alternate entry</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>HW Notification</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>BIST</td><td><span class="val val-disable">Disable</span></td><td>Built-in self test</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>BIST Enable</td><td><span class="val val-disable">Disable</span></td><td>Alternate BIST entry</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>X2APIC Opt Out</td><td><span class="val val-enable">Enable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="valuezero"><td>Number of Stop Grant Cycles</td><td><span class="val val-set">0</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>CPU Replaced Polling Disable</td><td><span class="val val-enable">Enable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="TRUE"><td>Disable Fast PKG C State Ramp for IA Domain</td><td><span class="val val-set">TRUE</span></td><td>Disables fast ramp during deeper C-states</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="TRUE"><td>Disable Fast PKG C State Ramp for GT Domain</td><td><span class="val val-set">TRUE</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="TRUE"><td>Disable Fast PKG C State Ramp for SA Domain</td><td><span class="val val-set">TRUE</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="TRUE"><td>Disable Fast PKG C State Ramp for VccIn Domain</td><td><span class="val val-set">TRUE</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Intel(R) SpeedStep(tm)</td><td><span class="val val-disable">Disable</span></td><td>EIST - frequency scaling (exact NVRAM name)</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Intel(R) Speed Shift Technology</td><td><span class="val val-disable">Disable</span></td><td>HWP - keep ENABLED on W11 23H2+ with E-cores for Thread Director</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Intel(R) Speed Shift Technology Interrupt Control</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PS3 Enable</td><td><span class="val val-disable">Disable</span></td><td>Power state 3 - all entries</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PS4 Enable</td><td><span class="val val-disable">Disable</span></td><td>Power state 4 - all entries</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Power Gating</td><td><span class="val val-disable">Disable</span></td><td>All entries</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>JTAG C10 Power Gate</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>ACPI 5.0 CPPC Support</td><td><span class="val val-disable">Disable</span></td><td>Collaborative Processor Performance Control</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Extreme"><td>CPU Power Phase Control</td><td><span class="val val-set">Extreme</span></td><td>VRM phase shedding - Extreme keeps all phases active</td><td class="col-toggle toggle-cell"></td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ==================== MEMORY ==================== -->
+<section id="memory" data-section="memory">
+  <h2>Memory / DRAM <span class="count-badge"></span></h2>
+  <p class="cat-desc">RAM power-down, refresh, voltage centering, channel config</p>
+  <div class="overflow-x">
+  <table class="ref-only">
+    <thead><tr><th>Setting</th><th>Value</th><th>Notes</th><th class="col-toggle"></th></tr></thead>
+    <tbody>
+      <tr data-action="set" data-target="No Power Down"><td>Power Down Mode</td><td><span class="val val-set">No Power Down</span></td><td>Helps latency significantly</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Disable"><td>DDR PowerDown and idle counter</td><td><span class="val val-set">Disable / PCODE</span></td><td>Shaves ns off RAM latency</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Disable"><td>For LPDDR: DDR PowerDown and idle counter</td><td><span class="val val-set">Disable / PCODE</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="valuezero"><td>PowerDown Energy Ch0Dimm0</td><td><span class="val val-set">0</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="valuezero"><td>PowerDown Energy Ch0Dimm1</td><td><span class="val val-set">0</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="valuezero"><td>PowerDown Energy Ch1Dimm0</td><td><span class="val val-set">0</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="valuezero"><td>PowerDown Energy Ch1Dimm1</td><td><span class="val val-set">0</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="valuezero"><td>EPG DIMM Idd3N</td><td><span class="val val-set">0</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="valuezero"><td>EPG DIMM Idd3P</td><td><span class="val val-set">0</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Command Tristate</td><td><span class="val val-disable">Disable</span></td><td>DRAM power saving</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>SelfRefresh Enable</td><td><span class="val val-disable">Disable</span></td><td>Helps input; can cause boot/restart issues on low-end boards</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Per Bank Refresh</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>LPMode</td><td><span class="val val-disable">Disable</span></td><td>Low power mode for DRAM</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>ECC Support</td><td><span class="val val-disable">Disable</span></td><td>Error correction - test after disabling</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>In-Band ECC Support</td><td><span class="val val-disable">Disable</span></td><td>DDR5 on-die ECC - uses bandwidth</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Write Voltage Centering 1D</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Write Voltage Centering 2D</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Read Voltage Centering 1D</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Read Voltage Centering 2D</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Command Voltage Centering</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Early Command Voltage Centering</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>Throttler CKEMin Defeature</td><td><span class="val val-enable">Enable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>For LPDDR Only: Throttler CKEMin Defeature</td><td><span class="val val-enable">Enable</span></td><td>Alternate entry for LPDDR boards</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Disabled"><td>Row Hammer Mode</td><td><span class="val val-set">Disabled</span></td><td>Disables RFM/pTRR mitigation - zero overhead, safe for desktop use</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Enable RH Prevention</td><td><span class="val val-disable">Disable</span></td><td>Software-side RH prevention - overhead with no benefit when Mode is off</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Memory Thermal Management</td><td><span class="val val-disable">Disable</span></td><td>Experimental</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>LPDDR Thermal Sensor</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Active Low"><td>ChipSelect 0 polarity (x3)</td><td><span class="val val-set">Active Low</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="BIT6"><td>Ch Hash Interleaved Bit</td><td><span class="val val-set">BIT6</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="valuezero"><td>HEBC value</td><td><span class="val val-set">0</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="valuezero"><td>Idle Energy Ch0Dimm0/1, Ch1Dimm0/1</td><td><span class="val val-set">0</span></td><td>Experimental - all four to 0</td><td class="col-toggle toggle-cell"></td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ==================== PCIe / DMI ==================== -->
+<section id="pcie" data-section="pcie">
+  <h2>PCIe / DMI <span class="count-badge"></span></h2>
+  <p class="cat-desc">Link power management, ASPM, LTR, payload sizes, clock gating</p>
+  <div class="overflow-x">
+  <table class="ref-only">
+    <thead><tr><th>Setting</th><th>Value</th><th>Notes</th><th class="col-toggle"></th></tr></thead>
+    <tbody>
+      <tr data-action="disable"><td>ASPM</td><td><span class="val val-disable">Disable</span></td><td>Active State Power Management - all entries</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEG - ASPM</td><td><span class="val val-disable">Disable</span></td><td>PEG0/1/2 ASPM entries</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Native ASPM</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>DMI ASPM</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>DMI Link ASPM Control</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>DMI Gen3 ASPM</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>ALL LTRs</td><td><span class="val val-disable">Disable</span></td><td>Latency Tolerance Reporting - all entries; may affect smoothness</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>LTR Mechanism Enable</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>LTR</td><td><span class="val val-disable">Disable</span></td><td>Individual LTR entries per port</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Force LTR Override</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>LTR Lock</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>ALL OBFF</td><td><span class="val val-disable">Disable</span></td><td>Optimized Buffer Flush/Fill</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>L1 Substates</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>L1 Low</td><td><span class="val val-disable">Disable</span></td><td>PCIe L1 Low substate - power saving on idle links</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PCI Express Clock Gating</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PCI Express Power Gating</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Clock Power Management</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PCIe Spread Spectrum Clocking</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PCIE Spread Spectrum</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PCIE/DMI Spread Spectrum</td><td><span class="val val-disable">Disable</span></td><td>Alternate entry</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>ARI Forwarding</td><td><span class="val val-enable">Enable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="test"><td>Re-Size BAR Support</td><td><span class="val val-test">Test</span></td><td>Can help or hurt GPU perf depending on game/driver - benchmark both</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>PCI Delay Optimization</td><td><span class="val val-enable">Enable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Link Training Retry</td><td><span class="val val-disable">Disable</span></td><td>Or set to 2</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>DMA Enable</td><td><span class="val val-disable">Disable</span></td><td>All entries</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>ACS</td><td><span class="val val-disable">Disable</span></td><td>Access Control Services - all entries</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PTM</td><td><span class="val val-disable">Disable</span></td><td>Precision Time Measurement - all entries</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>DPC</td><td><span class="val val-disable">Disable</span></td><td>Downstream Port Containment - all entries</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>EDPC</td><td><span class="val val-disable">Disable</span></td><td>Enhanced DPC - all entries</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Snoop Latency Override</td><td><span class="val val-disable">Disable</span></td><td>All entries</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Non Snoop Latency Override</td><td><span class="val val-disable">Disable</span></td><td>All entries</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="1 ns"><td>Snoop Latency Multiplier (all)</td><td><span class="val val-set">0x0 (1 ns)</span></td><td>Testing - set all entries</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="valuezero"><td>Snoop Latency Value (all)</td><td><span class="val val-set">0x0</span></td><td>Testing - set all entries</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="1 ns"><td>Non Snoop Latency Multiplier (all)</td><td><span class="val val-set">0x0 (1 ns)</span></td><td>Testing - set all entries</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="valuezero"><td>Non Snoop Latency Value (all)</td><td><span class="val val-set">0x0</span></td><td>Testing - set all entries</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEP CPU</td><td><span class="val val-disable">Disable</span></td><td>Power Engine Plug-in entries</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEP Graphics</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEP IPU</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEP GNA</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEP SATA</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEP enumerated SATA ports</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEP PCIe Storage</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEP PCIe LAN</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEP PCIe WLAN</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEP PCIe GFX</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEP PCIe Other</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEP UART</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEP I2C0</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEP I2C1</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEP I2C2</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEP I2C3</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEP I2C4</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEP I2C5</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEP I2C6</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEP I2C7</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEP SPI</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEP XHCI</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEP Audio</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEP CSME</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEP HECI3</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEP LAN(GBE)</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEP THC0</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEP THC1</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEP TCSS</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEP VMD</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PEP EMMC</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PME SCI</td><td><span class="val val-disable">Disable</span></td><td>Wake-up for PCIe</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Hot Plug</td><td><span class="val val-disable">Disable</span></td><td>All PCIe hot plug entries</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>BIOS Hot-Plug Support</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>SATA6G_1 Hot Plug</td><td><span class="val val-disable">Disable</span></td><td>Per-port SATA hot plug</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>SATA6G_2 Hot Plug</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>SATA6G_3 Hot Plug</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>SATA6G_4 Hot Plug</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>M.2_3 Hot Plug</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Advanced Error Reporting</td><td><span class="val val-disable">Disable</span></td><td>All entries</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>SA GV</td><td><span class="val val-disable">Disable</span></td><td>System Agent voltage/clock dynamic adjustment</td><td class="col-toggle toggle-cell"></td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ==================== USB ==================== -->
+<section id="usb" data-section="usb">
+  <h2>USB <span class="count-badge"></span></h2>
+  <p class="cat-desc">Controller mode, power gating, legacy support</p>
+  <div class="overflow-x">
+  <table class="ref-only">
+    <thead><tr><th>Setting</th><th>Value</th><th>Notes</th><th class="col-toggle"></th></tr></thead>
+    <tbody>
+      <tr data-action="disable"><td>XHCI Hand-off</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>XHCI Legacy Support</td><td><span class="val val-disable">Disable</span></td><td>Peripherals not detected on boot - re-enable to enter BIOS</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>XHCI Idle L1</td><td><span class="val val-disable">Disable</span></td><td>USB power saving</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>BTCG</td><td><span class="val val-disable">Disable</span></td><td>USB power saving - helps mouse polling significantly</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>USB2 PHY Sus Well Power Gating</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>USB Overcurrent</td><td><span class="val val-disable">Disable</span></td><td>Risky</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>USB Overcurrent Lock</td><td><span class="val val-disable">Disable</span></td><td>Risky</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>USB Single Port Control</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>USB Mass Storage Driver Support</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>USB S5 Wakeup Support</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>USB Provisioning of AMT</td><td><span class="val val-disable">Disable</span></td><td>Remote management</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>USB3 Type-C UFP2DFP Kernel/Platform Debug Support</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>USB DbC Enable Mode</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Type C Support</td><td><span class="val val-disable">Disable</span></td><td>If not using USB-C</td><td class="col-toggle toggle-cell"></td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ==================== SECURITY ==================== -->
+<section id="security" data-section="security">
+  <h2>Security / Mitigations <span class="count-badge"></span></h2>
+  <p class="cat-desc">TPM, SGX, TXT, encryption, virtualization security - all overhead</p>
+  <div class="overflow-x">
+  <table class="ref-only">
+    <thead><tr><th>Setting</th><th>Value</th><th>Notes</th><th class="col-toggle"></th></tr></thead>
+    <tbody>
+      <tr data-action="disable"><td>Intel Platform Trust Technology (PTT)</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>TPM State</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Software Guard Extensions (SGX)</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>SW Guard Extension</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Intel Trusted Execution Technology (TXT)</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Total Memory Encryption</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>BME DMA Mitigation</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PAVP Enable</td><td><span class="val val-disable">Disable</span></td><td>Protected Audio Video Path</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>AES</td><td><span class="val val-disable">Disable</span></td><td>Encryption acceleration (Intel AES-NI)</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>ASF Support</td><td><span class="val val-disable">Disable</span></td><td>Alert Standard Format</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Platform Hierarchy</td><td><span class="val val-disable">Disable</span></td><td>TPM 2.0 related</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Storage Hierarchy</td><td><span class="val val-disable">Disable</span></td><td>TPM 2.0 related</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Endorsement Hierarchy</td><td><span class="val val-disable">Disable</span></td><td>TPM 2.0 related</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Secure Boot</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>BIOS Interface Lock</td><td><span class="val val-disable">Disable</span></td><td>Experimental</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>Overclocking Lock</td><td><span class="val val-enable">Enable</span></td><td>Locks OC settings - enable after tuning</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>CFG Lock</td><td><span class="val val-enable">Enable</span></td><td>Disables CPU PM subsystem - blocks ThrottleStop changes</td><td class="col-toggle toggle-cell"></td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ==================== PERIPHERALS ==================== -->
+<section id="peripherals" data-section="peripherals">
+  <h2>Peripherals / Onboard Devices <span class="count-badge"></span></h2>
+  <p class="cat-desc">Disable unused controllers - Wi-Fi, Bluetooth, audio, LAN, iGPU, Thunderbolt</p>
+  <div class="overflow-x">
+  <table class="ref-only">
+    <thead><tr><th>Setting</th><th>Value</th><th>Notes</th><th class="col-toggle"></th></tr></thead>
+    <tbody>
+      <tr data-action="disable"><td>Internal Graphics</td><td><span class="val val-disable">Disable</span></td><td>If not using iGPU</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>IGD Multi-Monitor</td><td><span class="val val-disable">Disable</span></td><td>If not using iGPU</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Gfx Low Power Mode</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>RC6(Render Standby)</td><td><span class="val val-disable">Disable</span></td><td>iGPU power saving</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>RC6+ (Deep RC6)</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Wi-Fi Controller</td><td><span class="val val-disable">Disable</span></td><td>If not using Wi-Fi</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Wi-Fi Core</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CNVI MODE</td><td><span class="val val-disable">Disable</span></td><td>Wi-Fi and Bluetooth related</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Onboard CNVi Module Control</td><td><span class="val val-disable">Disable</span></td><td>If not using Wi-Fi/BT</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Bluetooth Controller</td><td><span class="val val-disable">Disable</span></td><td>If not using BT</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Discrete Bluetooth Interface</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Connectivity mode (Wi-Fi &amp; Bluetooth)</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>WWAN Device</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>WWAN</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>WWAN Reset Workaround</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>WiFi SAR</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>WiFi Dynamic SAR</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Bluetooth SAR</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>LAN Boot</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>LAN Wake From DeepSx</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Wake on LAN Enable</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Foxville I225 Wake on LAN Support</td><td><span class="val val-disable">Disable</span></td><td>Intel I225-V NIC</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Wake on WLAN and BT Enable</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>DeepSx Wake on WLAN and BT Enable</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Wake On WiGig</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Wake System from S5</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Azalia</td><td><span class="val val-disable">Disable</span></td><td>Realtek Audio Controller - if using USB audio only</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Azalia PME</td><td><span class="val val-disable">Disable</span></td><td>Audio controller power saving</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Azalia Docking Support</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CPU SA Audio Device</td><td><span class="val val-disable">Disable</span></td><td>HDMI audio pass-through - doesn't disable Realtek</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Discrete Thunderbolt Support</td><td><span class="val val-disable">Disable</span></td><td>If not using TB</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PCIE Tunneling over USB4</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>TBT RTD3 Enable</td><td><span class="val val-disable">Disable</span></td><td>Thunderbolt power saving</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Titan Ridge Workaround</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Windows 10 Thunderbolt Support</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>SMART Self Test</td><td><span class="val val-disable">Disable</span></td><td>SATA health check</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Aggressive LPM Support</td><td><span class="val val-disable">Disable</span></td><td>SATA power saving</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>SATA Device Sleep</td><td><span class="val val-disable">Disable</span></td><td>All entries</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PUIS Enable</td><td><span class="val val-disable">Disable</span></td><td>Power-up in Standby for SATA</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>ZPODD</td><td><span class="val val-disable">Disable</span></td><td>Optical drive power saving</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Max Performance"><td>Acoustic Mode</td><td><span class="val val-set">Max Performance</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>GNA Device</td><td><span class="val val-disable">Disable</span></td><td>Gaussian Neural Accelerator - AI</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>IPU Device (B0:D5:F0)</td><td><span class="val val-disable">Disable</span></td><td>Image Processing Unit - AI</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CHAP Device</td><td><span class="val val-disable">Disable</span></td><td>Debug bus - ring/IA/SA</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Thermal Device</td><td><span class="val val-disable">Disable</span></td><td>PCH thermal reporting intermediary</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>IOAPIC 24-119 Entries</td><td><span class="val val-disable">Disable</span></td><td>Not needed if devices are in MSI mode</td><td class="col-toggle toggle-cell"></td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ==================== DEBUG ==================== -->
+<section id="debug" data-section="debug">
+  <h2>Debug / Logging / Tracing <span class="count-badge"></span></h2>
+  <p class="cat-desc">Disable diagnostic overhead unless actively debugging</p>
+  <div class="overflow-x">
+  <table class="ref-only">
+    <thead><tr><th>Setting</th><th>Value</th><th>Notes</th><th class="col-toggle"></th></tr></thead>
+    <tbody>
+      <tr data-action="disable"><td>CrashLog Feature</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Cpu CrashLog (Device 10)</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CrashLog On All Reset</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CrashLog PMC Rearm</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CrashLog PMC Clear</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CrashLog Cdie Rearm</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CrashLog Cdie Clear</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CrashLog GPRs</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PMC Debug Message Enable</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PCH Trace Hub Enable Mode</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CPU Trace Hub Enable Mode</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Trace Hub</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Processor Trace OutPut Scheme</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>SMM Processor Trace</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Probeless Trace</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Memory Trace</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Training Tracing</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Debug Interface</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Platform Debug Consent</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>ACPI Debug</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>WDT Enable</td><td><span class="val val-disable">Disable</span></td><td>Watchdog timer - recovery after BSOD</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>ICC/OC Watchdog Timer</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Three Strike Counter</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PET Progress</td><td><span class="val val-disable">Disable</span></td><td>Platform Event Trap</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>ASF Sensors Table</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CPU Wakeup Timer</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>EC CS Debug Light</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Ptid Support</td><td><span class="val val-disable">Disable</span></td><td>Temperature/voltage monitoring device</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PECI</td><td><span class="val val-disable">Disable</span></td><td>Thermal monitoring tool</td><td class="col-toggle toggle-cell"></td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ==================== BOOT / MISC ==================== -->
+<section id="boot" data-section="boot">
+  <h2>Boot / Miscellaneous <span class="count-badge"></span></h2>
+  <p class="cat-desc">Boot options, network boot, legacy features, ME</p>
+  <div class="overflow-x">
+  <table class="ref-only">
+    <thead><tr><th>Setting</th><th>Value</th><th>Notes</th><th class="col-toggle"></th></tr></thead>
+    <tbody>
+      <tr data-action="disable"><td>ME State</td><td><span class="val val-disable">Disable</span></td><td>Puts ME in Temporarily Disabled Mode</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>HECI Message check Disable</td><td><span class="val val-enable">Enable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>D0I3 Setting for HECI Disable</td><td><span class="val val-enable">Enable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Mrc Fast Boot</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Fast Boot</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Disabled"><td>Option ROM Messages</td><td><span class="val val-set">Disabled / Keep Current</span></td><td>Hides device info at boot</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Ipv4 PXE Support</td><td><span class="val val-disable">Disable</span></td><td>Network boot</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Ipv6 PXE Support</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Network Stack</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Network Stack Driver Support</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>Legacy Mode</td><td><span class="val val-enable">Enable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Upon Request"><td>GateA20 Active</td><td><span class="val val-set">Upon Request</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Legacy Game Compatibility Mode</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Port 60/64 Emulation</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Port 61h Bit-4 Emulation</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Above 4G Decoding</td><td><span class="val val-disable">Disable</span></td><td>Memory mapped I/O for 64-bit PCIe - disable unless needed</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Continuous"><td>Serial IRQ Mode</td><td><span class="val val-set">Continuous</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Normal Boot"><td>Next Boot after AC Power Loss</td><td><span class="val val-set">Normal Boot</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Off"><td>Bootup NumLock State</td><td><span class="val val-set">Off</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Enable FFU Support</td><td><span class="val val-disable">Disable</span></td><td>Full Flash Update</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Intel Rapid Recovery Technology</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Intel(R) Optane(TM) Memory</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>ACPI D3Cold Support</td><td><span class="val val-disable">Disable</span></td><td>Device power saving</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Enable VTIO Support</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Control Iommu Pre-boot Behavior</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>SR-IOV Support</td><td><span class="val val-disable">Disable</span></td><td>Virtualization</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Enable TCO Timer</td><td><span class="val val-disable">Disable</span></td><td>Watchdog related</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>HDCP Support</td><td><span class="val val-disable">Disable</span></td><td>Can fix monitor lag</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Enable 8254 Clock Gate</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>HPET</td><td><span class="val val-enable">Enable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Duty Cycle Correction Training</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>Extreme Over-Voltage</td><td><span class="val val-enable">Enable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>VRM Spread Spectrum</td><td><span class="val val-disable">Disable</span></td><td>Better OC stability</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>BCLK Spread Spectrum</td><td><span class="val val-disable">Disable</span></td><td>Better OC stability</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>FIVR Spread Spectrum</td><td><span class="val val-disable">Disable</span></td><td>Better OC stability</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>MSI enabled</td><td><span class="val val-enable">Enable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>Enhanced Turbo</td><td><span class="val val-enable">Enable</span></td><td>Useless on static OC but allows all-core turbo</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>ASUS MultiCore Enhancement</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ==================== PERFORMANCE TUNING ==================== -->
+<section id="perf" data-section="perf">
+  <h2>Performance Tuning <span class="count-badge"></span></h2>
+  <p class="cat-desc">Settings to enable or set to specific values for performance</p>
+  <div class="overflow-x">
+  <table class="ref-only">
+    <thead><tr><th>Setting</th><th>Value</th><th>Notes</th><th class="col-toggle"></th></tr></thead>
+    <tbody>
+      <tr data-action="enable"><td>Legacy IO Low Latency</td><td><span class="val val-enable">Enable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>PCH Cross Throttling</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>Disable DSX ACPRESENT PullDown</td><td><span class="val val-enable">Enable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>All DeepSx Power Policies</td><td><span class="val val-disable">Disable</span></td><td></td><td class="col-toggle toggle-cell"></td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ==================== EXPERIMENTAL ==================== -->
+<section id="experimental" data-section="experimental">
+  <h2>Experimental / Test One-by-One <span class="count-badge"></span></h2>
+  <p class="cat-desc">Board-dependent - test individually with CMOS reset available</p>
+  <div class="overflow-x">
+  <table class="ref-only">
+    <thead><tr><th>Setting</th><th>Value</th><th>Notes</th><th class="col-toggle"></th></tr></thead>
+    <tbody>
+      <tr data-action="test"><td>Memory Scrambler</td><td><span class="val val-test">Disable</span></td><td>Can cause issues - test carefully</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="test"><td>Ch Hash Support</td><td><span class="val val-test">Test</span></td><td>Checksums and data integrity</td><td class="col-toggle toggle-cell"></td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<footer>
+  Sources: Hyyote SCEWIN settings collection, Billzy Intel Hidden BIOS Guide, Cat's GRUB list
+  <br>Use <a href="https://github.com/valleyofdoom/PC-Tuning" target="_blank" rel="noopener">valleyofdoom/PC-Tuning &sect;6.6</a> for SCEWIN/GRUB/UEFI-Editor setup instructions
+</footer>
+
+<script>
+const SECTION_LABELS = {
+  cstates: 'C-States', power: 'Power Mgmt', cpu: 'CPU', memory: 'Memory',
+  pcie: 'PCIe / DMI', usb: 'USB', security: 'Security', peripherals: 'Peripherals',
+  debug: 'Debug', boot: 'Boot / Misc', perf: 'Performance', experimental: 'Experimental'
+};
+
+let nvramOriginal = null;
+let nvramLines = null;
+let fileLoaded = false;
+
+function buildSettingsDB() {
+  const db = [];
+  document.querySelectorAll('section[data-section] tbody tr[data-action]').forEach(tr => {
+    const section = tr.closest('section').dataset.section;
+    const name = tr.querySelector('td:first-child').textContent.trim();
+    const action = tr.dataset.action;
+    const target = tr.dataset.target || '';
+    db.push({ name, action, target, section, row: tr, enabled: true });
+  });
+  return db;
+}
+const settingsDB = buildSettingsDB();
+
+function initToggles() {
+  document.querySelectorAll('section[data-section] tbody tr[data-action]').forEach(tr => {
+    const cell = tr.querySelector('.toggle-cell');
+    if (!cell) return;
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = true;
+    cb.className = 'row-toggle';
+    cb.addEventListener('change', () => {
+      const entry = settingsDB.find(s => s.row === tr);
+      if (entry) entry.enabled = cb.checked;
+      updateSelectedCount();
+    });
+    cell.appendChild(cb);
+  });
+}
+initToggles();
+
+function buildSectionToggles() {
+  const container = document.getElementById('sectionToggles');
+  const sections = [...new Set(settingsDB.map(s => s.section))];
+  sections.forEach(sec => {
+    const count = settingsDB.filter(s => s.section === sec).length;
+    const btn = document.createElement('button');
+    btn.className = 'section-toggle active';
+    btn.dataset.section = sec;
+    btn.innerHTML = `${SECTION_LABELS[sec] || sec} <span class="ct">${count}</span>`;
+    btn.addEventListener('click', () => {
+      btn.classList.toggle('active');
+      const on = btn.classList.contains('active');
+      settingsDB.filter(s => s.section === sec).forEach(s => {
+        s.enabled = on;
+        const cb = s.row.querySelector('.row-toggle');
+        if (cb) cb.checked = on;
+      });
+      updateSelectedCount();
+    });
+    container.appendChild(btn);
+  });
+}
+buildSectionToggles();
+
+function updateSelectedCount() {
+  const active = settingsDB.filter(s => s.enabled).length;
+  document.getElementById('selectedCount').textContent = `${active} / ${settingsDB.length} selected`;
+}
+updateSelectedCount();
+
+document.getElementById('btnSelectAll').addEventListener('click', () => {
+  settingsDB.forEach(s => { s.enabled = true; const cb = s.row.querySelector('.row-toggle'); if (cb) cb.checked = true; });
+  document.querySelectorAll('.section-toggle').forEach(b => b.classList.add('active'));
+  updateSelectedCount();
+});
+document.getElementById('btnDeselectAll').addEventListener('click', () => {
+  settingsDB.forEach(s => { s.enabled = false; const cb = s.row.querySelector('.row-toggle'); if (cb) cb.checked = false; });
+  document.querySelectorAll('.section-toggle').forEach(b => b.classList.remove('active'));
+  updateSelectedCount();
+});
+
+// ---- NVRAM PARSER ----
+function parseNVRAM(text) {
+  const lines = text.split(/\r?\n/);
+  const blocks = [];
+  let current = null;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (/^\/\/\s*Setup Question/.test(line)) { current = null; continue; }
+    const sqMatch = line.match(/^Setup Question\s*=\s*(.+)$/);
+    if (sqMatch) {
+      current = { name: sqMatch[1].trim(), lineIdx: i, type: null, optStart: -1, optEnd: -1, valIdx: -1 };
+      blocks.push(current);
+      continue;
+    }
+    if (current && /^Options\s*=/.test(line)) {
+      current.type = 'options';
+      current.optStart = i;
+      current.optEnd = i;
+      let j = i + 1;
+      while (j < lines.length && /^\s+[\*\[]/.test(lines[j])) { current.optEnd = j; j++; }
+    }
+    if (current && /^Value\s*=/.test(line)) {
+      if (!current.type) { current.type = 'value'; current.valIdx = i; }
+    }
+  }
+  return { lines, blocks };
+}
+
+function applySettings(parsed, enabledSettings) {
+  const lines = [...parsed.lines];
+  let changed = 0;
+  const nameMap = new Map();
+  enabledSettings.forEach(s => {
+    const key = s.name.toLowerCase().trim();
+    if (!nameMap.has(key)) nameMap.set(key, []);
+    nameMap.get(key).push(s);
+  });
+
+  for (const block of parsed.blocks) {
+    const key = block.name.toLowerCase().trim();
+    const settings = nameMap.get(key);
+    if (!settings || settings.length === 0) continue;
+    const setting = settings[0];
+
+    if (block.type === 'options') {
+      const action = setting.action;
+      const target = setting.target;
+      if (action === 'test') continue;
+      for (let j = block.optStart; j <= block.optEnd; j++) {
+        let l = lines[j];
+        if (/^\s*(Options\s*=\s*)\*/.test(l)) {
+          lines[j] = l.replace(/^(\s*Options\s*=\s*)\*/, '$1');
+        } else if (/^\s+\*\[/.test(l)) {
+          lines[j] = l.replace(/\*\[/, '[');
+        }
+      }
+      let found = false;
+      for (let j = block.optStart; j <= block.optEnd; j++) {
+        const l = lines[j];
+        let match = false;
+        if (action === 'disable' && /\[\w+\]\s*Disable/i.test(l)) match = true;
+        else if (action === 'enable' && /\[\w+\]\s*Enable/i.test(l)) match = true;
+        else if ((action === 'set' || action === 'special') && target && l.indexOf(target) !== -1) match = true;
+        if (match && !found) {
+          if (/^(\s*Options\s*=\s*)(\[.+)/.test(lines[j])) {
+            lines[j] = lines[j].replace(/^(\s*Options\s*=\s*)(\[)/, '$1*$2');
+          } else if (/^(\s+)(\[.+)/.test(lines[j])) {
+            lines[j] = lines[j].replace(/^(\s+)(\[)/, '$1*$2');
+          }
+          found = true; changed++;
+        }
+      }
+    } else if (block.type === 'value') {
+      const action = setting.action;
+      const line = lines[block.valIdx];
+      if (action === 'valuezero' || action === 'disable') {
+        const m1 = line.match(/^(Value\s*=\s*)<(\d+)>(.*)$/);
+        if (m1) { lines[block.valIdx] = m1[1] + '<0>' + m1[3]; changed++; }
+        else {
+          const m2 = line.match(/^(Value\s*=\s*)(\d+)(.*)$/);
+          if (m2) { lines[block.valIdx] = m2[1] + '0' + m2[3]; changed++; }
+        }
+      } else if (action === 'enable') {
+        const m1 = line.match(/^(Value\s*=\s*)<(\d+)>(.*)$/);
+        if (m1) { lines[block.valIdx] = m1[1] + '<1>' + m1[3]; changed++; }
+        else {
+          const m2 = line.match(/^(Value\s*=\s*)(\d+)(.*)$/);
+          if (m2) { lines[block.valIdx] = m2[1] + '1' + m2[3]; changed++; }
+        }
+      }
+    }
+  }
+  return { lines, changed };
+}
+
+// ---- FILE HANDLING ----
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('drag-over');
+  if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', () => { if (fileInput.files.length) handleFile(fileInput.files[0]); });
+
+function handleFile(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    const text = reader.result;
+    nvramOriginal = text;
+    const parsed = parseNVRAM(text);
+    nvramLines = parsed;
+    fileLoaded = true;
+
+    document.getElementById('fileName').textContent = file.name;
+    const totalQ = parsed.blocks.length;
+    const matchable = settingsDB.filter(s => {
+      const key = s.name.toLowerCase().trim();
+      return parsed.blocks.some(b => b.name.toLowerCase().trim() === key);
+    }).length;
+    document.getElementById('fileStats').textContent =
+      `${totalQ} Setup Questions found - ${matchable} match reference settings`;
+    document.getElementById('fileStatus').classList.add('visible');
+    document.getElementById('applyToolbar').classList.add('visible');
+    document.body.classList.add('configurator-active');
+    document.querySelectorAll('table').forEach(t => t.classList.remove('ref-only'));
+    document.getElementById('applyResult').textContent = '';
+  };
+  reader.readAsText(file);
+}
+
+// ---- APPLY ----
+let downloadsAPI = null;
+(async () => { try { downloadsAPI = await claude.use('downloads'); } catch(e) {} })();
+
+document.getElementById('btnApply').addEventListener('click', async () => {
+  if (!fileLoaded || !nvramOriginal) return;
+  const parsed = parseNVRAM(nvramOriginal);
+  const enabled = settingsDB.filter(s => s.enabled);
+  const result = applySettings(parsed, enabled);
+  nvramLines = { lines: result.lines, blocks: parsed.blocks };
+
+  const blob = new Blob([result.lines.join('\r\n')], { type: 'text/plain' });
+  if (downloadsAPI) {
+    try {
+      await downloadsAPI.save({ filename: 'nvram.txt', data: blob });
+    } catch (e) {
+      document.getElementById('applyResult').textContent = 'Download declined or unavailable';
+      return;
+    }
+  }
+
+  document.getElementById('applyResult').textContent =
+    `Applied ${result.changed} changes across ${enabled.length} enabled settings`;
+});
+
+document.getElementById('btnReset').addEventListener('click', () => {
+  if (!nvramOriginal) return;
+  nvramLines = parseNVRAM(nvramOriginal);
+  document.getElementById('applyResult').textContent = 'Reset to original file';
+});
+
+// ---- SEARCH / FILTER ----
+const search = document.getElementById('search');
+const filterBtns = document.querySelectorAll('.filter-btn');
+let activeFilter = 'all';
+
+function getValType(row) {
+  const val = row.querySelector('.val');
+  if (!val) return '';
+  if (val.classList.contains('val-disable')) return 'disable';
+  if (val.classList.contains('val-enable')) return 'enable';
+  if (val.classList.contains('val-set')) return 'set';
+  if (val.classList.contains('val-test')) return 'test';
+  return '';
+}
+
+function applyFilters() {
+  const q = search.value.toLowerCase().trim();
+  const rows = document.querySelectorAll('tbody tr');
+  const sections = document.querySelectorAll('section');
+  rows.forEach(row => {
+    const text = row.textContent.toLowerCase();
+    const matchSearch = !q || text.includes(q);
+    const matchFilter = activeFilter === 'all' || getValType(row) === activeFilter;
+    row.classList.toggle('hidden-row', !(matchSearch && matchFilter));
+  });
+  sections.forEach(sec => {
+    const visible = sec.querySelectorAll('tbody tr:not(.hidden-row)');
+    const badge = sec.querySelector('.count-badge');
+    const total = sec.querySelectorAll('tbody tr');
+    if (badge) badge.textContent = visible.length < total.length
+      ? `${visible.length}/${total.length}` : `${total.length}`;
+    sec.hidden = visible.length === 0;
+  });
+}
+
+filterBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    filterBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = btn.dataset.filter;
+    applyFilters();
+  });
+});
+search.addEventListener('input', applyFilters);
+applyFilters();
+</script>
