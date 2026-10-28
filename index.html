@@ -528,7 +528,7 @@
       <tr data-action="disable"><td>Hyper-Threading</td><td><span class="val val-disable">Disable</span></td><td>SMT  -  two logical cores per physical; disable if 6+ cores unless consistently CPU-bound at 99%</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="set" data-target="RUN Loop"><td>AP Threads Idle Manner</td><td><span class="val val-set">RUN Loop</span></td><td>Application Processors spin in RUN loop instead of HLT/MWAIT  -  avoids C-state exit latency on wake</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="set" data-target="Turbo Performance"><td>Boot Performance Mode</td><td><span class="val val-set">Turbo Performance</span></td><td>CPU starts POST at max turbo ratio instead of LFM</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="set" data-target="Fixed Priority"><td>Interrupt Redirection Mode Selection</td><td><span class="val val-set">Fixed Priority</span></td><td>IOAPIC delivery mode  -  minimal impact with MSI; Fixed avoids TPR arbitration; <a href="https://pdos.csail.mit.edu/6.828/2016/readings/ia32/ioapic.pdf" target="_blank" rel="noopener">82093AA §2.4</a></td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="set" data-target="Round Robin"><td>Interrupt Redirection Mode Selection</td><td><span class="val val-set">Round Robin</span></td><td>IOAPIC delivery mode  -  Round Robin distributes interrupts across all eligible cores equally; Fixed Priority always sends to the lowest-APICID core, concentrating load on core 0</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="set" data-target="Manual"><td>Stop Grant Configuration</td><td><span class="val val-set">Manual</span></td><td>Manual control over stop-clock grant cycles issued during bus idle</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="enable"><td>Limit CPUID Maximum</td><td><span class="val val-enable">Enable</span></td><td>Caps CPUID leaf enumeration  -  reduces OS feature detection surface</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>Intel (VMX) Virtualization Technology</td><td><span class="val val-disable">Disable</span></td><td>Hardware-assisted virtualization (VMX root/non-root)  -  re-enable for VMs or WSL2</td><td class="col-toggle toggle-cell"></td></tr>
@@ -1482,6 +1482,15 @@ document.getElementById('btnConfirmApply').addEventListener('click', async () =>
   document.getElementById('confirmOverlay').classList.remove('visible');
   nvramLines = { lines: result.lines, blocks: parseNVRAM(nvramOriginal).blocks };
   const outputLines = [];
+  const origLines = nvramOriginal.split(/\r?\n/);
+  let headerEnd = -1;
+  for (let i = 0; i < Math.min(origLines.length, 20); i++) {
+    if (/^HIICrc32\s*=/.test(origLines[i])) { headerEnd = i; break; }
+  }
+  if (headerEnd >= 0) {
+    for (let i = 0; i <= headerEnd; i++) outputLines.push(origLines[i]);
+    outputLines.push('');
+  }
   const seen = new Set();
   result.changes.forEach(c => {
     const key = c.blockStart + ':' + c.blockEnd;
