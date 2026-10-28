@@ -1490,6 +1490,7 @@ document.getElementById('btnConfirmApply').addEventListener('click', async () =>
     for (let i = c.blockStart; i <= c.blockEnd; i++) {
       outputLines.push(result.lines[i]);
     }
+    outputLines.push('');
   });
   const blob = new Blob([outputLines.join('\r\n')], { type: 'text/plain' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
