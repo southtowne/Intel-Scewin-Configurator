@@ -1257,7 +1257,7 @@ function applySettings(parsed, enabledSettings) {
           const nm = lines[j].replace(/\s*\/\/.*$/, '').match(/\]\s*(.+)$/);
           found = true; changed++;
           const blockStart = block.lineIdx;
-          const blockEnd = bi + 1 < parsed.blocks.length ? parsed.blocks[bi + 1].lineIdx - 1 : lines.length - 1;
+          const blockEnd = block.optEnd;
           changes.push({ name: block.name, action, old: oldVal, new: nm ? nm[1].trim() : action, via, blockStart, blockEnd });
         }
       }
@@ -1285,7 +1285,7 @@ function applySettings(parsed, enabledSettings) {
       }
       if (newVal) {
         const blockStart = block.lineIdx;
-        const blockEnd = bi + 1 < parsed.blocks.length ? parsed.blocks[bi + 1].lineIdx - 1 : lines.length - 1;
+        const blockEnd = block.valIdx;
         changes.push({ name: block.name, action, old: oldVal, new: newVal, via, blockStart, blockEnd });
       }
     }
