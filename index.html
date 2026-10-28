@@ -1,4 +1,3 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Intel SCEWIN Configurator</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap">
 <style>
@@ -771,7 +770,7 @@
       <tr data-action="disable"><td>Secure Boot</td><td><span class="val val-disable">Disable</span></td><td>UEFI Secure Boot - verifies bootloader/driver signatures</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="disable"><td>BIOS Interface Lock</td><td><span class="val val-disable">Disable</span></td><td>Locks BIOS_CNTL register  -  prevents runtime SPI flash writes; experimental</td><td class="col-toggle toggle-cell"></td></tr>
       <tr data-action="enable"><td>Overclocking Lock</td><td><span class="val val-enable">Enable</span></td><td>Locks MSR 0x194 OC mailbox  -  enable after OC tuning is finalized to prevent drift</td><td class="col-toggle toggle-cell"></td></tr>
-      <tr data-action="enable"><td>CFG Lock</td><td><span class="val val-enable">Enable</span></td><td>Locks MSR 0xE2 (PKG_CST_CONFIG_CONTROL)  -  prevents OS/tools from changing CPU PM config</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>CFG Lock</td><td><span class="val val-disable">Disable</span></td><td>Locks MSR 0xE2 (PKG_CST_CONFIG_CONTROL)  -  prevents OS/tools from changing CPU PM config</td><td class="col-toggle toggle-cell"></td></tr>
     </tbody>
   </table>
   </div>
@@ -1177,7 +1176,8 @@ function applySettings(parsed, enabledSettings) {
     if (s.keywords) kwSettings.push(s);
   });
 
-  for (const block of parsed.blocks) {
+  for (let bi = 0; bi < parsed.blocks.length; bi++) {
+    const block = parsed.blocks[bi];
     const key = block.name.toLowerCase().trim();
     let settings = nameMap.get(key);
     let via = '';
@@ -1226,7 +1226,9 @@ function applySettings(parsed, enabledSettings) {
           }
           const nm = lines[j].match(/\]\s*(.+)$/);
           found = true; changed++;
-          changes.push({ name: block.name, action, old: oldVal, new: nm ? nm[1].trim() : action, via });
+          const blockStart = block.lineIdx;
+          const blockEnd = bi + 1 < parsed.blocks.length ? parsed.blocks[bi + 1].lineIdx - 1 : lines.length - 1;
+          changes.push({ name: block.name, action, old: oldVal, new: nm ? nm[1].trim() : action, via, blockStart, blockEnd });
         }
       }
     } else if (block.type === 'value') {
@@ -1251,7 +1253,11 @@ function applySettings(parsed, enabledSettings) {
           if (m2) { lines[block.valIdx] = m2[1] + '1' + m2[3]; newVal = '1'; changed++; }
         }
       }
-      if (newVal) changes.push({ name: block.name, action, old: oldVal, new: newVal, via });
+      if (newVal) {
+        const blockStart = block.lineIdx;
+        const blockEnd = bi + 1 < parsed.blocks.length ? parsed.blocks[bi + 1].lineIdx - 1 : lines.length - 1;
+        changes.push({ name: block.name, action, old: oldVal, new: newVal, via, blockStart, blockEnd });
+      }
     }
   }
   return { lines, changed, changes };
@@ -1445,7 +1451,17 @@ document.getElementById('btnConfirmApply').addEventListener('click', async () =>
   pendingResult = null;
   document.getElementById('confirmOverlay').classList.remove('visible');
   nvramLines = { lines: result.lines, blocks: parseNVRAM(nvramOriginal).blocks };
-  const blob = new Blob([result.lines.join('\r\n')], { type: 'text/plain' });
+  const outputLines = [];
+  const seen = new Set();
+  result.changes.forEach(c => {
+    const key = c.blockStart + ':' + c.blockEnd;
+    if (seen.has(key)) return;
+    seen.add(key);
+    for (let i = c.blockStart; i <= c.blockEnd; i++) {
+      outputLines.push(result.lines[i].replace(/\s*\/\/\s*Move "\*" to the desired Option.*$/, ''));
+    }
+  });
+  const blob = new Blob([outputLines.join('\r\n')], { type: 'text/plain' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
   a.download = 'nvram.txt'; a.click(); URL.revokeObjectURL(a.href);
   document.getElementById('applyResult').textContent =
@@ -1504,4 +1520,3 @@ filterBtns.forEach(btn => {
 search.addEventListener('input', applyFilters);
 applyFilters();
 </script>
-</body></html>
