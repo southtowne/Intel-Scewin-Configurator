@@ -612,6 +612,36 @@
   </div>
 </section>
 
+<!-- ==================== MEMORY TRAINING ==================== -->
+<section id="training" data-section="training">
+  <h2>Memory Training <span class="count-badge"></span></h2>
+  <p class="cat-desc">MRC signal integrity training steps and memory reference code controls</p>
+  <div class="overflow-x">
+  <table class="ref-only">
+    <thead><tr><th>Setting</th><th>Value</th><th>Notes</th><th class="col-toggle"></th></tr></thead>
+    <tbody>
+      <tr data-action="test" data-no-preset><td>Dimm Odt Training</td><td><span class="val val-test">Test</span></td><td>SI  -  on-die termination impedance calibration per DIMM rank (RttNom/RttPark)</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="test" data-no-preset><td>DIMM RON Training</td><td><span class="val val-test">Test</span></td><td>SI  -  output driver impedance (RON) calibration per DIMM</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="test" data-no-preset><td>Write Drive Strength/Equalization 2D</td><td><span class="val val-test">Test</span></td><td>SI  -  IMC write driver strength + TX equalization 2D sweep</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="test" data-no-preset><td>Write Slew Rate Training</td><td><span class="val val-test">Test</span></td><td>SI  -  IMC write output slew rate optimization</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="test" data-no-preset><td>Read ODT Training</td><td><span class="val val-test">Test</span></td><td>SI  -  IMC-side read ODT impedance calibration for optimal signal reflection</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="test" data-no-preset><td>Read Equalization Training</td><td><span class="val val-test">Test</span></td><td>SI  -  IMC read-path CTLE equalization for high-frequency signal recovery</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="test" data-no-preset><td>Read Amplifier Training</td><td><span class="val val-test">Test</span></td><td>SI  -  read amplifier bias point optimization for eye height</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="test" data-no-preset><td>Write Drive Strength Up/Dn independently</td><td><span class="val val-test">Test</span></td><td>SI  -  independent pull-up/pull-down driver strength calibration</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="test" data-no-preset><td>TxDqTCO Comp Training</td><td><span class="val val-test">Test</span></td><td>SI  -  TX DQ duty cycle correction via timing compensation offset</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="test" data-no-preset><td>ClkTCO Comp Training</td><td><span class="val val-test">Test</span></td><td>SI  -  clock duty cycle correction via timing compensation offset</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="test" data-no-preset><td>DIMM CA ODT Training</td><td><span class="val val-test">Test</span></td><td>SI  -  DDR5 command/address ODT calibration (N/A on DDR4)</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="test" data-no-preset><td>TxDqsTCO Comp Training</td><td><span class="val val-test">Test</span></td><td>SI  -  TX DQS strobe duty cycle correction via timing compensation</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="test" data-no-preset><td>PanicVttDnLp Training</td><td><span class="val val-test">Test</span></td><td>SI  -  VTT voltage panic threshold calibration for low-power transitions</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="disable"><td>Safe Mode Support</td><td><span class="val val-disable">Disable</span></td><td>Forces conservative MRC parameters  -  disable to allow full-range training optimization</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>Retrain Margin Check</td><td><span class="val val-enable">Enable</span></td><td>MRC verifies trained margins are adequate before completing  -  catches marginal results</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable"><td>Memory Test</td><td><span class="val val-enable">Enable</span></td><td>MRC built-in memory test after training  -  validates stability before handing off to OS</td><td class="col-toggle toggle-cell"></td></tr>
+      <tr data-action="enable" data-keywords="cold reset"><td>Force Cold Reset</td><td><span class="val val-enable">Enable</span></td><td>Forces cold reset path  -  ensures full MRC retraining every boot; adds boot time but maximizes training quality</td><td class="col-toggle toggle-cell"></td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
 <!-- ==================== PCIe / DMI ==================== -->
 <section id="pcie" data-section="pcie">
   <h2>PCIe / DMI <span class="count-badge"></span></h2>
@@ -980,7 +1010,7 @@
 
 <script>
 const SECTION_LABELS = {
-  cstates: 'C-States', power: 'Power Mgmt', cpu: 'CPU', memory: 'Memory',
+  cstates: 'C-States', power: 'Power Mgmt', cpu: 'CPU', memory: 'Memory', training: 'Memory Training',
   pcie: 'PCIe / DMI', usb: 'USB', security: 'Security', peripherals: 'Peripherals',
   debug: 'Debug', boot: 'Boot / Misc', perf: 'Performance', experimental: 'Experimental'
 };
@@ -1199,7 +1229,7 @@ function applySettings(parsed, enabledSettings) {
       let oldVal = '';
       for (let j = block.optStart; j <= block.optEnd; j++) {
         if (/\*/.test(lines[j])) {
-          const m = lines[j].match(/\]\s*(.+)$/);
+          const m = lines[j].replace(/\s*\/\/.*$/, '').match(/\]\s*(.+)$/);
           if (m) oldVal = m[1].trim();
         }
       }
@@ -1224,7 +1254,7 @@ function applySettings(parsed, enabledSettings) {
           } else if (/^(\s+)(\[.+)/.test(lines[j])) {
             lines[j] = lines[j].replace(/^(\s+)(\[)/, '$1*$2');
           }
-          const nm = lines[j].match(/\]\s*(.+)$/);
+          const nm = lines[j].replace(/\s*\/\/.*$/, '').match(/\]\s*(.+)$/);
           found = true; changed++;
           const blockStart = block.lineIdx;
           const blockEnd = bi + 1 < parsed.blocks.length ? parsed.blocks[bi + 1].lineIdx - 1 : lines.length - 1;
@@ -1458,7 +1488,7 @@ document.getElementById('btnConfirmApply').addEventListener('click', async () =>
     if (seen.has(key)) return;
     seen.add(key);
     for (let i = c.blockStart; i <= c.blockEnd; i++) {
-      outputLines.push(result.lines[i].replace(/\s*\/\/\s*Move "\*" to the desired Option.*$/, ''));
+      outputLines.push(result.lines[i]);
     }
   });
   const blob = new Blob([outputLines.join('\r\n')], { type: 'text/plain' });
